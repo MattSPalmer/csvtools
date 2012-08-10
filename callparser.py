@@ -66,16 +66,16 @@ def callers(calls):
     for k, v in incoming.iteritems():
         print k, v
 
-@benchmark
 def byhour(calls):
-    """Given a report detailing incoming calls, TODO"""
+    """Given a report detailing incoming calls over a specific date range,
+    return a bar graph of hourly calls per day."""
     import operator
     import os
 
+    # clear the terminal window
     os.system('clear')
 
-    dates = calls.toDict()['date_added']
-
+    # prepare for readable dates
     monthhash = {
         1:  'January',
         2:  'February',
@@ -99,41 +99,55 @@ def byhour(calls):
         6: 'Friday',
         7: 'Saturday'}
 
-    days = {}
+    # isolate date strings and convert to date format from string
+    dates = calls.toDict()['date_added']
 
+    # hash the hours of each call to the day of each call.
+    days = {}
     for i in dates:
         day = (i.year, i.month, i.day)
         days[day] = days.get(day, [])
         days[day].append(i.hour)
 
+    # reduce the value of each key from a list to a count per hour
     for j in days.keys():
         days[j] = dict(Counter(days[j]))
 
+    # creating and drawing the graph for each day (key) and set of hour counts (values)
     for day, hours in sorted(days.iteritems()):
         graph = []
         hourstring = ''
+
+        # What day are we looking at?
         graph.insert(0, '{0} {1}, {2}\n\n\n'.format(monthhash[day[1]], day[2], day[0]))
 
+        # A horizontal axis of hours of the day
         for n in range(0, 24): 
             hourstring += '{:<3}'.format(n)
-
         graph.insert(0, hourstring)
         graph.insert(0, '='*72)
 
+        # Find the max number of calls per hour in this day to determine the
+        # number of rows we need.
         countmax = max(hours.iteritems(), key=operator.itemgetter(1))[1]
-
         for j in range(0, countmax):
+            # Create a row of the graph.
             row = ''
             for k in range(0, 24):
-                hours[k] = hours.get(k, 0)
+                hours[k] = hours.get(k, 0)      # Add keys for 0-call hours
+
+                # only print our symbol (+) if here at row n, there were at
+                # least n calls at this hour
                 if j < hours[k]: row += '+  '
                 else: row += '   '
             graph.insert(0, row)
 
+        # normalize the height, since we want visual continuity
         print '\n'*(40-len(graph))
         for line in graph:
             print line
-        raw_input("Press Enter to continue...")
+
+        raw_input("Press Enter to continue...") 
         os.system('clear')
 
 
