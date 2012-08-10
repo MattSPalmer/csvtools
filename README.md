@@ -17,3 +17,5 @@ The main executable is **callparser**, which parses data from CSV reports genera
 **-m, --missed**: display missed calls by date
 
 **-w, --write**: write input to new file
+
+**-b, --byhour**: display calls by day and by hour

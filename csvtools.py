@@ -47,7 +47,7 @@ class Report:
         return self
 
     def headers(self):
-        return self.fileRows[0]
+        return self.rowBuffer[0]
 
     def removeColumns(self, *args):
         for arg in args:
@@ -56,7 +56,7 @@ class Report:
                 row.pop(index)
         return self
 
-    def filter(self, column, query=None, inverse=False, header=True):
+    def filter(self, column, query=None, header=True, inverse=False):
         if column not in self.headers():
             print 'Error: invalid column header name.'
         else:
@@ -77,7 +77,7 @@ class Report:
         def toDate(datestr):
             return datetime.strptime(datestr, self.dateFormat)
 
-        for i, elem in enumerate(self.fileRows[0]):
+        for i, elem in enumerate(self.rowBuffer[0]):
             if 'date' in elem:
                 column = [toDate(row[i]) for row in self.rowBuffer[1:]]
             else:
