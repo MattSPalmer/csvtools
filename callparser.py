@@ -90,15 +90,6 @@ def byhour(calls):
         11: 'November',
         12: 'December'}
 
-    weekhash = {
-        1: 'Sunday',
-        2: 'Monday',
-        3: 'Tuesday',
-        4: 'Wednesday',
-        5: 'Thursday',
-        6: 'Friday',
-        7: 'Saturday'}
-
     # isolate date strings and convert to date format from string
     dates = calls.toDict()['date_added']
 
@@ -119,7 +110,7 @@ def byhour(calls):
         hourstring = ''
 
         # What day are we looking at?
-        graph.insert(0, '{0} {1}, {2}\n\n\n'.format(monthhash[day[1]], day[2], day[0]))
+        graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
 
         # A horizontal axis of hours of the day
         for n in range(0, 24): 
@@ -143,7 +134,7 @@ def byhour(calls):
             graph.insert(0, row)
 
         # normalize the height, since we want visual continuity
-        print '\n'*(40-len(graph))
+        print '\n'*50
         for line in graph:
             print line
 

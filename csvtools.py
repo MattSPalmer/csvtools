@@ -78,6 +78,7 @@ class Report:
             return datetime.strptime(datestr, self.dateFormat)
 
         for i, elem in enumerate(self.rowBuffer[0]):
+            # Convert strings to dates where applicable.
             if 'date' in elem:
                 column = [toDate(row[i]) for row in self.rowBuffer[1:]]
             else:
