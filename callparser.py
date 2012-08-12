@@ -94,12 +94,13 @@ def byhour(calls):
         11: 'November',
         12: 'December'}
 
-    # isolate date strings and convert to date format from string
+    # Isolate date strings and convert to date format from string, ignoring the
+    # header row when iterating over calls
     calls.removeColumns("dnis","ani","call_duration","phone_label")
     for call in calls[1:]:
         call[0] = toDate(call[0])
 
-    # hash the hours of each call to the day of each call.
+    # Hash the hours of each call to the day of each call.
     days = {}
     for call in calls[1:]:
         day = (call[0].year, call[0].month, call[0].day)
@@ -107,7 +108,7 @@ def byhour(calls):
         days[day][call[0].hour] = days[day].get(call[0].hour, [])
         days[day][call[0].hour].append(call[1] != '')
 
-    # creating and drawing the graph for each day (key) and set of hour counts (values)
+    # Creating and drawing the graph for each day (key) and set of hour counts (values)
     for day, hours in sorted(days.iteritems()):
         graph = []
 
@@ -127,7 +128,7 @@ def byhour(calls):
                 hourstring += '{:<3}'.format(symbol)
             graph.insert(0, hourstring)
 
-        # normalize the height, since we want visual continuity
+        # Normalize the height, since we want visual continuity
         print '\n'*50
         for line in reversed(graph):
             print line
