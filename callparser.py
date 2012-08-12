@@ -110,38 +110,23 @@ def byhour(calls):
     # creating and drawing the graph for each day (key) and set of hour counts (values)
     for day, hours in sorted(days.iteritems()):
         graph = []
-        hourstring = ''
 
         # What day are we looking at?
         graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
 
         # A horizontal axis of hours of the day
         for n in range(0, 24): 
-            hourstring += '{:<3}'.format(n)
-        graph.insert(0, hourstring)
-        graph.insert(0, '='*72)
-
-        # Find the max number of calls per hour in this day to determine the
-        # number of rows we need.
-        countmax = max([len(calls) for calls in hours.values()])
-        for j in range(0, countmax):
-            # Create a row of the graph.
-            row = ''
-            for k in range(0, 24):
-                hours[k] = hours.get(k, [])      # Add keys for 0-call hours
-
-                # only print our symbol (+) if here at row n, there were at
-                # least n calls at this hour
-                if j < len(hours[k]):
-                    if hours[k][j]:
-                        row += '{:<3}'.format('+')
-                    else: row += '{:<3}'.format('o')
-                else: row += '   '
-            graph.insert(0, row)
+            hourstring = ''
+            hours[n] = hours.get(n, [])      # Add keys for 0-call hours
+            hourstring += '{:<3}|'.format(n)
+            for state in hours[n]:
+                symbol = '+' if state else 'o'
+                hourstring += '{:<3}'.format(symbol)
+            graph.insert(0, hourstring)
 
         # normalize the height, since we want visual continuity
         print '\n'*50
-        for line in graph:
+        for line in reversed(graph):
             print line
 
         raw_input("Press Enter to continue...") 
