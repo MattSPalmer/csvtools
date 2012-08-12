@@ -192,9 +192,6 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--graphbyhour', action='store_true',
             help='graph calls by hour and day')
 
-    parser.add_argument('-t', '--test', action='store_true',
-            help='testing stuff')
-
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
@@ -211,6 +208,4 @@ if __name__ == '__main__':
         drawgraph(timeparse(theReport))
     elif args.write:
         writeToJson(timeparse(theReport))
-    elif args.test:
-        print timeparse(theReport)
     else: print 'Run %s -h for usage' % (__file__)
