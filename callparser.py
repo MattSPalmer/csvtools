@@ -152,14 +152,12 @@ def drawgraph(period):
 
     drawgraph(timeparse(calls))
 
+@benchmark
 def writeToJson(daydata, dataname='data'):
     dataname += '.json'
     f = open(dataname, 'wb')
     f.write(json.dumps(daydata))
     f.close()
-
-
-
 
 if __name__ == '__main__':
     import argparse
