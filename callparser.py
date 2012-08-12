@@ -2,8 +2,11 @@
 
 import csvtools
 import typeutil
+import operator
+import os
 from collections import Counter
 from confidential import agentKeys
+from datetime import datetime
 
 # Decorators
 def benchmark(func):
@@ -69,8 +72,9 @@ def callers(calls):
 def byhour(calls):
     """Given a report detailing incoming calls over a specific date range,
     return a bar graph of hourly calls per day."""
-    import operator
-    import os
+
+    def toDate(datestr):
+        return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
 
     # clear the terminal window
     os.system('clear')
@@ -91,18 +95,17 @@ def byhour(calls):
         12: 'December'}
 
     # isolate date strings and convert to date format from string
-    dates = calls.toDict()['date_added']
+    calls.removeColumns("dnis","ani","call_duration","phone_label")
+    for call in calls[1:]:
+        call[0] = toDate(call[0])
 
     # hash the hours of each call to the day of each call.
     days = {}
-    for i in dates:
-        day = (i.year, i.month, i.day)
-        days[day] = days.get(day, [])
-        days[day].append(i.hour)
-
-    # reduce the value of each key from a list to a count per hour
-    for j in days.keys():
-        days[j] = dict(Counter(days[j]))
+    for call in calls[1:]:
+        day = (call[0].year, call[0].month, call[0].day)
+        days[day] = days.get(day, {})
+        days[day][call[0].hour] = days[day].get(call[0].hour, [])
+        days[day][call[0].hour].append(call[1] != '')
 
     # creating and drawing the graph for each day (key) and set of hour counts (values)
     for day, hours in sorted(days.iteritems()):
@@ -120,16 +123,19 @@ def byhour(calls):
 
         # Find the max number of calls per hour in this day to determine the
         # number of rows we need.
-        countmax = max(hours.iteritems(), key=operator.itemgetter(1))[1]
+        countmax = max([len(calls) for calls in hours.values()])
         for j in range(0, countmax):
             # Create a row of the graph.
             row = ''
             for k in range(0, 24):
-                hours[k] = hours.get(k, 0)      # Add keys for 0-call hours
+                hours[k] = hours.get(k, [])      # Add keys for 0-call hours
 
                 # only print our symbol (+) if here at row n, there were at
                 # least n calls at this hour
-                if j < hours[k]: row += '+  '
+                if j < len(hours[k]):
+                    if hours[k][j]:
+                        row += '{:<3}'.format('+')
+                    else: row += '{:<3}'.format('o')
                 else: row += '   '
             graph.insert(0, row)
 
