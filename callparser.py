@@ -180,9 +180,14 @@ if __name__ == '__main__':
 
     theReport = csvtools.Report(args.reportfile)
 
-    if args.missed: missed(theReport)
-    elif args.callers: callers(theReport)
-    elif args.agents: agents(theReport)
-    elif args.byhour: byhour(theReport)
-    elif args.write: theReport.write()
+    if args.missed:
+        missed(theReport)
+    elif args.callers:
+        callers(theReport)
+    elif args.agents:
+        agents(theReport)
+    elif args.byhour:
+        byhour(theReport)
+    elif args.write:
+        theReport.write()
     else: print 'Run %s -h for usage' % (__file__)
