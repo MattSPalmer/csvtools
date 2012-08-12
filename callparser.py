@@ -155,5 +155,55 @@ def writeToJson(daydata, dataname='data'):
 
 
 if __name__ == '__main__':
-    theReport = csvtools.Report('~/Downloads/Call Detail Report (3).csv')
-    print timeparse(theReport)
+    import argparse
+    import textwrap
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.dedent('''\
+            Parse a report file from IfByPhone with the following content:
+
+            date_added
+            dnis
+            ani
+            call_duration
+            transfer_to_number
+            phone_label
+            '''))
+
+    parser.add_argument('-a', '--agents', action='store_true',
+            help='display missed calls by agent phone number')
+
+    parser.add_argument('-c', '--callers', action='store_true',
+            help='display each incoming caller with number of times called')
+
+    parser.add_argument('-m', '--missed', action='store_true',
+            help='display missed calls by date')
+
+    parser.add_argument('-w', '--write', action='store_true',
+            help='write input to new file')
+
+    parser.add_argument('-g', '--graphbyhour', action='store_true',
+            help='graph calls by hour and day')
+
+    parser.add_argument('-t', '--test', action='store_true',
+            help='testing stuff')
+
+    parser.add_argument('reportfile')
+
+    args = parser.parse_args()
+
+    theReport = csvtools.Report(args.reportfile)
+
+    if args.missed:
+        missed(theReport)
+    elif args.callers:
+        callers(theReport)
+    elif args.agents:
+        agents(theReport)
+    elif args.graphbyhour:
+        drawgraph(timeparse(theReport))
+    elif args.write:
+        writeToJson(timeparse(theReport))
+    elif args.test:
+        print timeparse(theReport)
+    else: print 'Run %s -h for usage' % (__file__)
