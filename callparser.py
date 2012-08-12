@@ -114,11 +114,14 @@ def byhour(calls):
         # What day are we looking at?
         graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
 
-        # A horizontal axis of hours of the day
+        # Each row is an hour of the day
         for n in range(0, 24): 
-            hourstring = ''
             hours[n] = hours.get(n, [])      # Add keys for 0-call hours
+            hourstring = ''
             hourstring += '{:<3}|'.format(n)
+
+            # Using the truth state of each list item in the value of an hour's
+            # key, print one symbol for calls taken and another for missed.
             for state in hours[n]:
                 symbol = '+' if state else 'o'
                 hourstring += '{:<3}'.format(symbol)
