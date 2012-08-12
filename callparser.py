@@ -10,6 +10,14 @@ from collections import Counter
 from confidential import agentKeys
 from datetime import datetime
 
+class AutoVivification(dict):
+    def __getitem__(self, item):
+        try:
+            return dict.__getitem__(self, item)
+        except KeyError:
+            value = self[item] = type(self)()
+            return value
+
 # Decorators
 def benchmark(func):
     """A decorator that prints the time a function takes
@@ -82,15 +90,16 @@ def timeparse(calls):
         call[0] = toDate(call[0])
 
     # Hash the hours of each call to the day of each call.
-    days = {}
+    timestruct = AutoVivification()
     for call in calls[1:]:
-        day = (call[0].year, call[0].month, call[0].day)
-        days[day] = days.get(day, {})
-        days[day][call[0].hour] = days[day].get(call[0].hour, [])
-        days[day][call[0].hour].append(call[1] != '')
-    return days
+        (year, month, day, hour) = (call[0].year,
+                call[0].month, call[0].day, call[0].hour)
+        timestruct[year][month][day][hour] = timestruct[year][month][day].get(
+                hour, [])
+        timestruct[year][month][day][hour].append(call[1] != '')
+    return timestruct
 
-def drawgraph(daydata):
+def drawgraph(period):
     # clear the terminal window
     os.system('clear')
 
@@ -110,34 +119,45 @@ def drawgraph(daydata):
         12: 'December'}
 
     # Creating and drawing the graph for each day (key) and set of hour counts (values)
-    for day, hours in sorted(daydata.iteritems()):
-        graph = []
+    for year, months in sorted(period.iteritems()):
+        for month, days in sorted(months.iteritems()):
+            for day, hours in sorted(days.iteritems()):
 
-        # What day are we looking at?
-        graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
+                graph = []
 
-        # Each row is an hour of the day
-        for n in range(0, 24): 
-            hours[n] = hours.get(n, [])      # Add keys for 0-call hours
-            hourstring = ''
-            hourstring += '{:<3}|'.format(n)
+                # What day are we looking at?
+                graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[month], day,
+                    year))
 
-            # Using the truth state of each list item in the value of an hour's
-            # key, print one symbol for calls taken and another for missed.
-            for state in hours[n]:
-                symbol = '+' if state else 'o'
-                hourstring += '{:<3}'.format(symbol)
-            graph.insert(0, hourstring)
+                # Each row is an hour of the day
+                for n in range(0, 24): 
+                    hours[n] = hours.get(n, [])      # Add keys for 0-call hours
+                    hourstring = ''
+                    hourstring += '{:<3}|'.format(n)
 
-        # Normalize the height, since we want visual continuity
-        print '\n'*50
-        for line in reversed(graph):
-            print line
+                    # Using the truth state of each list item in the value of an hour's
+                    # key, print one symbol for calls taken and another for missed.
+                    for state in hours[n]:
+                        symbol = '+' if state else 'o'
+                        hourstring += '{:<3}'.format(symbol)
+                    graph.insert(0, hourstring)
 
-        raw_input("Press Enter to continue...") 
-        os.system('clear')
+                # Normalize the height, since we want visual continuity
+                print '\n'*50
+                for line in reversed(graph):
+                    print line
+
+                raw_input("Press Enter to continue...") 
+                os.system('clear')
 
     drawgraph(timeparse(calls))
+
+def writeToJson(daydata, dataname='data'):
+    dataname += '.json'
+    f = open(dataname, 'wb')
+    f.write(json.dumps(daydata))
+    f.close()
+
 
 
 
@@ -172,6 +192,9 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--graphbyhour', action='store_true',
             help='graph calls by hour and day')
 
+    parser.add_argument('-t', '--test', action='store_true',
+            help='testing stuff')
+
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
@@ -187,5 +210,7 @@ if __name__ == '__main__':
     elif args.graphbyhour:
         drawgraph(timeparse(theReport))
     elif args.write:
-        theReport.write()
+        writeToJson(timeparse(theReport))
+    elif args.test:
+        print timeparse(theReport)
     else: print 'Run %s -h for usage' % (__file__)
