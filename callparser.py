@@ -169,8 +169,8 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--write', action='store_true',
             help='write input to new file')
 
-    parser.add_argument('-b', '--byhour', action='store_true',
-            help='display calls by hour and day')
+    parser.add_argument('-g', '--graphbyhour', action='store_true',
+            help='graph calls by hour and day')
 
     parser.add_argument('reportfile')
 
@@ -184,7 +184,7 @@ if __name__ == '__main__':
         callers(theReport)
     elif args.agents:
         agents(theReport)
-    elif args.byhour:
+    elif args.graphbyhour:
         drawgraph(timeparse(theReport))
     elif args.write:
         theReport.write()
