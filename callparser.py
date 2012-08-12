@@ -82,13 +82,19 @@ def timeparse(calls):
         call[0] = toDate(call[0])
 
     # Hash the hours of each call to the day of each call.
-    days = {}
+    timestruct = {}
     for call in calls[1:]:
-        day = (call[0].year, call[0].month, call[0].day)
-        days[day] = days.get(day, {})
-        days[day][call[0].hour] = days[day].get(call[0].hour, [])
-        days[day][call[0].hour].append(call[1] != '')
-    return days
+        (year, month, day, hour) = (call[0].year,
+                call[0].month, call[0].day, call[0].hour)
+        timestruct[year] = timestruct.get(year, {})
+        timestruct[year][month] = timestruct.get(
+                year[month], {})
+        timestruct[year][month][day] = timestruct.get(
+                year[month][day], {})
+        timestruct[year][month][day][hour] = timestruct.get(
+                year[month][day][hour], [])
+        timestruct[year][month][day][hour].append(call[1] != '')
+    return timestruct
 
 def drawgraph(daydata):
     # clear the terminal window
@@ -139,53 +145,15 @@ def drawgraph(daydata):
 
     drawgraph(timeparse(calls))
 
+def writeToJson(daydata, dataname='data'):
+    dataname += '.json'
+    f = open(dataname, 'wb')
+    f.write(json.dumps(daydata))
+    f.close()
+
+
 
 
 if __name__ == '__main__':
-    import argparse
-    import textwrap
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=textwrap.dedent('''\
-            Parse a report file from IfByPhone with the following content:
-
-            date_added
-            dnis
-            ani
-            call_duration
-            transfer_to_number
-            phone_label
-            '''))
-
-    parser.add_argument('-a', '--agents', action='store_true',
-            help='display missed calls by agent phone number')
-
-    parser.add_argument('-c', '--callers', action='store_true',
-            help='display each incoming caller with number of times called')
-
-    parser.add_argument('-m', '--missed', action='store_true',
-            help='display missed calls by date')
-
-    parser.add_argument('-w', '--write', action='store_true',
-            help='write input to new file')
-
-    parser.add_argument('-g', '--graphbyhour', action='store_true',
-            help='graph calls by hour and day')
-
-    parser.add_argument('reportfile')
-
-    args = parser.parse_args()
-
-    theReport = csvtools.Report(args.reportfile)
-
-    if args.missed:
-        missed(theReport)
-    elif args.callers:
-        callers(theReport)
-    elif args.agents:
-        agents(theReport)
-    elif args.graphbyhour:
-        drawgraph(timeparse(theReport))
-    elif args.write:
-        theReport.write()
-    else: print 'Run %s -h for usage' % (__file__)
+    theReport = csvtools.Report('~/Downloads/Call Detail Report (3).csv')
+    print timeparse(theReport)
