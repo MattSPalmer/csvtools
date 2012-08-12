@@ -185,7 +185,7 @@ if __name__ == '__main__':
     elif args.agents:
         agents(theReport)
     elif args.byhour:
-        byhour(theReport)
+        drawgraph(timeparse(theReport))
     elif args.write:
         theReport.write()
     else: print 'Run %s -h for usage' % (__file__)
