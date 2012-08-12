@@ -18,4 +18,4 @@ The main executable is **callparser**, which parses data from CSV reports genera
 
 **-w, --write**: write input to new file
 
-**-b, --byhour**: display calls by day and by hour
+**-g, --graphbyhour**: graph calls by day and by hour
