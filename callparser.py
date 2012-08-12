@@ -3,7 +3,9 @@
 import csvtools
 import typeutil
 import operator
+import json
 import os
+
 from collections import Counter
 from confidential import agentKeys
 from datetime import datetime
@@ -76,65 +78,71 @@ def byhour(calls):
     def toDate(datestr):
         return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
 
-    # clear the terminal window
-    os.system('clear')
+    def timeparse(calls):
+        # Isolate date strings and convert to date format from string, ignoring the
+        # header row when iterating over calls
+        calls.removeColumns("dnis","ani","call_duration","phone_label")
+        for call in calls[1:]:
+            call[0] = toDate(call[0])
 
-    # prepare for readable dates
-    monthhash = {
-        1:  'January',
-        2:  'February',
-        3:  'March',
-        4:  'April',
-        5:  'May',
-        6:  'June',
-        7:  'July',
-        8:  'August',
-        9:  'September',
-        10: 'October',
-        11: 'November',
-        12: 'December'}
+        # Hash the hours of each call to the day of each call.
+        days = {}
+        for call in calls[1:]:
+            day = (call[0].year, call[0].month, call[0].day)
+            days[day] = days.get(day, {})
+            days[day][call[0].hour] = days[day].get(call[0].hour, [])
+            days[day][call[0].hour].append(call[1] != '')
+        return days
 
-    # Isolate date strings and convert to date format from string, ignoring the
-    # header row when iterating over calls
-    calls.removeColumns("dnis","ani","call_duration","phone_label")
-    for call in calls[1:]:
-        call[0] = toDate(call[0])
 
-    # Hash the hours of each call to the day of each call.
-    days = {}
-    for call in calls[1:]:
-        day = (call[0].year, call[0].month, call[0].day)
-        days[day] = days.get(day, {})
-        days[day][call[0].hour] = days[day].get(call[0].hour, [])
-        days[day][call[0].hour].append(call[1] != '')
-
-    # Creating and drawing the graph for each day (key) and set of hour counts (values)
-    for day, hours in sorted(days.iteritems()):
-        graph = []
-
-        # What day are we looking at?
-        graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
-
-        # Each row is an hour of the day
-        for n in range(0, 24): 
-            hours[n] = hours.get(n, [])      # Add keys for 0-call hours
-            hourstring = ''
-            hourstring += '{:<3}|'.format(n)
-
-            # Using the truth state of each list item in the value of an hour's
-            # key, print one symbol for calls taken and another for missed.
-            for state in hours[n]:
-                symbol = '+' if state else 'o'
-                hourstring += '{:<3}'.format(symbol)
-            graph.insert(0, hourstring)
-
-        # Normalize the height, since we want visual continuity
-        print '\n'*50
-        for line in reversed(graph):
-            print line
-
-        raw_input("Press Enter to continue...") 
+    def drawgraph(daydata):
+        # clear the terminal window
         os.system('clear')
+
+        # prepare for readable dates
+        monthhash = {
+            1:  'January',
+            2:  'February',
+            3:  'March',
+            4:  'April',
+            5:  'May',
+            6:  'June',
+            7:  'July',
+            8:  'August',
+            9:  'September',
+            10: 'October',
+            11: 'November',
+            12: 'December'}
+
+        # Creating and drawing the graph for each day (key) and set of hour counts (values)
+        for day, hours in sorted(daydata.iteritems()):
+            graph = []
+
+            # What day are we looking at?
+            graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
+
+            # Each row is an hour of the day
+            for n in range(0, 24): 
+                hours[n] = hours.get(n, [])      # Add keys for 0-call hours
+                hourstring = ''
+                hourstring += '{:<3}|'.format(n)
+
+                # Using the truth state of each list item in the value of an hour's
+                # key, print one symbol for calls taken and another for missed.
+                for state in hours[n]:
+                    symbol = '+' if state else 'o'
+                    hourstring += '{:<3}'.format(symbol)
+                graph.insert(0, hourstring)
+
+            # Normalize the height, since we want visual continuity
+            print '\n'*50
+            for line in reversed(graph):
+                print line
+
+            raw_input("Press Enter to continue...") 
+            os.system('clear')
+
+    drawgraph(timeparse(calls))
 
 
 
