@@ -151,8 +151,6 @@ def drawgraph(period):
                 raw_input("Press Enter to continue...") 
                 os.system('clear')
 
-    drawgraph(timeparse(calls))
-
 @benchmark
 def writeToJson(daydata, dataname='data'):
     dataname += '.json'
