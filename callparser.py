@@ -5,10 +5,13 @@ import typeutil
 import operator
 import json
 import os
+import confidential
 
 from collections import Counter
-from confidential import agentKeys
 from datetime import datetime
+
+agentKeys = confidential.agentKeys
+sales = confidential.sales
 
 class AutoVivification(dict):
     def __getitem__(self, item):
@@ -43,6 +46,7 @@ def logging(func):
 # }}}
 
 # Output functions {{{
+# missed {{{
 def missed(calls):
     """Given a report detailing incoming calls, print data on calls missed
     organized by date."""
@@ -60,7 +64,9 @@ def missed(calls):
 
     for k, v in period.iteritems():
         print '%s/%s: %d' % (k[0], k[1], v)
+# }}}
 
+# agents {{{
 def agents(calls):
     """Given a report detailing incoming calls, return and print a dict of
     the form: {name/number of agent}: {number of calls answered}"""
@@ -71,7 +77,9 @@ def agents(calls):
         agentName = agentKeys.get(agentNumPretty, agentNumPretty)
         print agentName, ':', callNum
     print ''
+# }}}
 
+# callers {{{
 def callers(calls):
     """Given a report detailing incoming calls, return the incoming phone
     numbers and the number of times called."""
@@ -79,7 +87,9 @@ def callers(calls):
     incoming = dict(Counter(calls.toDict()['ani']))
     for k, v in incoming.iteritems():
         print k, v
+# }}}
 
+# timeparse {{{
 def timeparse(calls):
     # Isolate date strings and convert to date format from string, ignoring the
     # header row when iterating over calls
@@ -99,7 +109,9 @@ def timeparse(calls):
                 hour, [])
         timestruct[year][month][day][hour].append(call[1] or False)
     return timestruct
+# }}}
 
+# drawgraph {{{
 def drawgraph(period):
     # prepare for readable dates
 
@@ -136,8 +148,9 @@ def drawgraph(period):
                     # Using the truth state of each list item in the value of an hour's
                     # key, print one symbol for calls taken and another for missed.
                     for state in hours[n]:
-                        symbol = agentKeys.get(state, '+')[0] if state else 'o'
-                        hourstring += '{:<2}'.format(symbol)
+                        if agentKeys.get(state, '') not in sales:
+                            symbol = agentKeys.get(state, '+')[0] if state else 'o'
+                            hourstring += '{:<2}'.format(symbol)
                     graph.append(hourstring)
 
                 # Normalize the height, since we want visual continuity
@@ -145,12 +158,15 @@ def drawgraph(period):
                     print line
 
                 raw_input("Press Enter to continue...\n\n") 
+# }}}
 
+# writeToJson {{{
 def writeToJson(daydata, dataname='data'):
     dataname += '.json'
     f = open(dataname, 'wb')
     f.write(json.dumps(daydata))
     f.close()
+# }}}
 # }}}
 
 if __name__ == '__main__':
