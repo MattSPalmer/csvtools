@@ -40,7 +40,7 @@ def logging(func):
         print func.__name__, args, kwargs
         return res
     return wrapper
-#}}}
+# }}}
 
 # Output functions {{{
 def missed(calls):
@@ -151,9 +151,10 @@ def writeToJson(daydata, dataname='data'):
     f = open(dataname, 'wb')
     f.write(json.dumps(daydata))
     f.close()
-#}}}
+# }}}
 
 if __name__ == '__main__':
+    # Arg Prep {{{
     import argparse
     import textwrap
     parser = argparse.ArgumentParser(
@@ -168,7 +169,9 @@ if __name__ == '__main__':
             transfer_to_number
             phone_label
             '''))
+    # }}}
 
+        # Arguments {{{1
     parser.add_argument('-a', '--agents', action='store_true',
             help='display missed calls by agent phone number')
 
@@ -187,7 +190,9 @@ if __name__ == '__main__':
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
+    # }}}
 
+    # Logic  {{{
     theReport = csvtools.Report(args.reportfile)
 
     if args.missed:
