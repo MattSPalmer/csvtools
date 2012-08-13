@@ -18,7 +18,7 @@ class AutoVivification(dict):
             value = self[item] = type(self)()
             return value
 
-# Decorators
+# Decorators {{{
 def benchmark(func):
     """A decorator that prints the time a function takes
     to execute."""
@@ -40,8 +40,9 @@ def logging(func):
         print func.__name__, args, kwargs
         return res
     return wrapper
+#}}}
 
-# Output functions
+# Output functions {{{
 def missed(calls):
     """Given a report detailing incoming calls, print data on calls missed
     organized by date."""
@@ -100,10 +101,8 @@ def timeparse(calls):
     return timestruct
 
 def drawgraph(period):
-    # clear the terminal window
-    os.system('clear')
-
     # prepare for readable dates
+
     monthhash = {
         1:  'January',
         2:  'February',
@@ -122,7 +121,6 @@ def drawgraph(period):
     for year, months in sorted(period.iteritems()):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
-
                 graph = []
 
                 # What day are we looking at?
@@ -130,33 +128,30 @@ def drawgraph(period):
                     year))
 
                 # Each row is an hour of the day
-                for n in range(0, 24): 
+                for n in range(7, 22): 
                     hours[n] = hours.get(n, [])      # Add keys for 0-call hours
                     hourstring = ''
-                    hourstring += '{:<3}|'.format(n)
+                    hourstring += '{:>3}| '.format(n % 12 + 1)
 
                     # Using the truth state of each list item in the value of an hour's
                     # key, print one symbol for calls taken and another for missed.
-                    print hours[n]
                     for state in hours[n]:
                         symbol = agentKeys.get(state, '+')[0] if state else 'o'
                         hourstring += '{:<2}'.format(symbol)
                     graph.insert(0, hourstring)
 
                 # Normalize the height, since we want visual continuity
-                print '\n'*50
                 for line in reversed(graph):
                     print line
 
-                raw_input("Press Enter to continue...") 
-                os.system('clear')
+                raw_input("Press Enter to continue...\n\n") 
 
-@benchmark
 def writeToJson(daydata, dataname='data'):
     dataname += '.json'
     f = open(dataname, 'wb')
     f.write(json.dumps(daydata))
     f.close()
+#}}}
 
 if __name__ == '__main__':
     import argparse
