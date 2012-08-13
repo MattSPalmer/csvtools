@@ -96,7 +96,7 @@ def timeparse(calls):
                 call[0].month, call[0].day, call[0].hour)
         timestruct[year][month][day][hour] = timestruct[year][month][day].get(
                 hour, [])
-        timestruct[year][month][day][hour].append(call[1] != '')
+        timestruct[year][month][day][hour].append(call[1] or False)
     return timestruct
 
 def drawgraph(period):
@@ -137,9 +137,10 @@ def drawgraph(period):
 
                     # Using the truth state of each list item in the value of an hour's
                     # key, print one symbol for calls taken and another for missed.
+                    print hours[n]
                     for state in hours[n]:
-                        symbol = '+' if state else 'o'
-                        hourstring += '{:<3}'.format(symbol)
+                        symbol = agentKeys.get(state, '+')[0] if state else 'o'
+                        hourstring += '{:<2}'.format(symbol)
                     graph.insert(0, hourstring)
 
                 # Normalize the height, since we want visual continuity
