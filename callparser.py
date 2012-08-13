@@ -124,7 +124,7 @@ def drawgraph(period):
                 graph = []
 
                 # What day are we looking at?
-                graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[month], day,
+                graph.append('{0} {1}, {2}\n'.format(monthhash[month], day,
                     year))
 
                 # Each row is an hour of the day
@@ -138,10 +138,10 @@ def drawgraph(period):
                     for state in hours[n]:
                         symbol = agentKeys.get(state, '+')[0] if state else 'o'
                         hourstring += '{:<2}'.format(symbol)
-                    graph.insert(0, hourstring)
+                    graph.append(hourstring)
 
                 # Normalize the height, since we want visual continuity
-                for line in reversed(graph):
+                for line in graph:
                     print line
 
                 raw_input("Press Enter to continue...\n\n") 
