@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 # Declarations {{{
-import csvtools
-import typeutil
-import operator
-import json
-import os
 import confidential
+import csvtools
+import json
+import operator
+import os
+import typeutil
 
+from calendar import month_name
 from collections import Counter
 from datetime import datetime
 
@@ -46,7 +47,7 @@ def logging(func):
     return wrapper
 # }}}
 
-# Output functions {{{
+# Parsing {{{
 # missed {{{
 def missed(calls):
     """Given a report detailing incoming calls, print data on calls missed
@@ -112,10 +113,12 @@ def timeparse(calls):
     return timestruct
 # }}}
 
+# }}}
+
+# Basic Output {{{
 # drawgraph {{{
 def drawgraph(**kwargs):
     # iterate externally
-
     title = kwargs['title']
     datagen = kwargs['datagen']
     data = kwargs.get('data', None)
@@ -125,7 +128,7 @@ def drawgraph(**kwargs):
     graph.append(title)
     for row in axis:
         rowstring = ''
-        padding = len(max(axis, key=len))
+        padding = len(str(max(axis)))
 
         rowstring += '{0:>{1}}| '.format(row, padding)
 
@@ -144,7 +147,36 @@ def writeToJson(daydata, dataname='data'):
     f.write(json.dumps(daydata))
     f.close()
 # }}}
+
 # }}}
+
+# Products {{{
+# byhour {{{
+def byhour(datagroup):
+
+    def generator(row, data):
+        for call in data[row]:
+            if agentKeys.get(call, '') not in sales:
+                if call:
+                    yield agentKeys.get(call, '+')[0]
+                else:
+                    yield '-'
+
+    params = dict([["datagen", generator]])
+
+    for year, months in sorted(datagroup.iteritems()):
+        for month, days in sorted(months.iteritems()):
+            for day, hours in sorted(days.iteritems()):
+                params['title'] = '{0} {1}, {2}\n'.format(month_name[month],
+                        day, year)
+                params['axis'] = [n for n in range(7, 22)]
+                params['data'] = hours
+
+                drawgraph(**params)
+# }}}
+
+# }}}
+
 
 if __name__ == '__main__':
     # Arg Prep {{{
@@ -180,9 +212,6 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--graphbyhour', action='store_true',
             help='graph calls by hour and day')
 
-    parser.add_argument('-t', '--testing', action='store_true',
-            help='testing')
-
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
@@ -198,21 +227,9 @@ if __name__ == '__main__':
     elif args.agents:
         agents(theReport)
     elif args.graphbyhour:
-        drawgraph(timeparse(theReport))
+        byhour(timeparse(theReport))
     elif args.write:
         writeToJson(timeparse(theReport))
-    elif args.testing:
-        def datagen(row, data):
-            for n in row:
-                if n in 'aeiou':
-                    yield 'v'
-                else:
-                    yield 'c'
-        params = {}
-        params['title'] = 'Names'
-        params['datagen'] = datagen
-        params['axis'] = ['Bobby', 'Susan', 'Montgomery', 'Joe', 'Ashley']
-        drawgraph(**params)
 
     else: print 'Run %s -h for usage' % (__file__)
     # }}}
