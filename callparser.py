@@ -113,54 +113,11 @@ def timeparse(calls):
 # }}}
 
 # drawgraph {{{
-def drawgraph(period):
-    # prepare for readable dates
-
-    monthhash = {
-        1:  'January',
-        2:  'February',
-        3:  'March',
-        4:  'April',
-        5:  'May',
-        6:  'June',
-        7:  'July',
-        8:  'August',
-        9:  'September',
-        10: 'October',
-        11: 'November',
-        12: 'December'}
-
-    # Creating and drawing the graph for each day (key) and set of hour counts (values)
-    for year, months in sorted(period.iteritems()):
-        for month, days in sorted(months.iteritems()):
-            for day, hours in sorted(days.iteritems()):
-                # INCEPTION
-
-                graph = []
-
-                # What day are we looking at?
-                graph.append('{0} {1}, {2}\n'.format(monthhash[month], day,
-                    year))
-
-                # Each row is an hour of the day
-                for n in range(7, 22): 
-                    hours[n] = hours.get(n, [])      # Add keys for 0-call hours
-                    hourstring = ''
-                    hourstring += '{:>3}| '.format(n % 12 + 1)
-
-                    # Using the truth state of each list item in the value of an hour's
-                    # key, print one symbol for calls taken and another for missed.
-                    for state in hours[n]:
-                        if agentKeys.get(state, '') not in sales:
-                            symbol = agentKeys.get(state, '+')[0] if state else 'o'
-                            hourstring += '{:<2}'.format(symbol)
-                    graph.append(hourstring)
-
-                # Normalize the height, since we want visual continuity
-                for line in graph:
-                    print line
-
-                raw_input("Press Enter to continue...\n\n") 
+def drawgraph(*args, **kwargs):
+    # iterate externally
+    # title (e.g. date)
+    # axis: [list]
+    # rows based on axis
 # }}}
 
 # writeToJson {{{
