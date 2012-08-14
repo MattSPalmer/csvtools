@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Declarations {{{
 import csvtools
 import typeutil
 import operator
@@ -12,7 +13,9 @@ from datetime import datetime
 
 agentKeys = confidential.agentKeys
 sales = confidential.sales
+# }}}
 
+# Classes {{{
 class AutoVivification(dict):
     def __getitem__(self, item):
         try:
@@ -20,11 +23,11 @@ class AutoVivification(dict):
         except KeyError:
             value = self[item] = type(self)()
             return value
+# }}}
 
 # Decorators {{{
 def benchmark(func):
-    """A decorator that prints the time a function takes
-    to execute."""
+    """A decorator that prints the time a function takes to execute."""
     import time
     def wrapper(*args, **kwargs):
         t = time.clock()
@@ -34,10 +37,8 @@ def benchmark(func):
     return wrapper
 
 def logging(func):
-    """
-    A decorator that logs the activity of the script.
-    (it actually just prints it, but it could be logging!)
-    """
+    """A decorator that logs the activity of the script. (it actually just
+    prints it, but it could be logging!)"""
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
         print func.__name__, args, kwargs
@@ -107,7 +108,7 @@ def timeparse(calls):
                 call[0].month, call[0].day, call[0].hour)
         timestruct[year][month][day][hour] = timestruct[year][month][day].get(
                 hour, [])
-        timestruct[year][month][day][hour].append(call[1] or False)
+        timestruct[year][month][day][hour].append(call[1])
     return timestruct
 # }}}
 
@@ -133,6 +134,8 @@ def drawgraph(period):
     for year, months in sorted(period.iteritems()):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
+                # INCEPTION
+
                 graph = []
 
                 # What day are we looking at?
@@ -187,7 +190,7 @@ if __name__ == '__main__':
             '''))
     # }}}
 
-        # Arguments {{{1
+        # Arguments {{{
     parser.add_argument('-a', '--agents', action='store_true',
             help='display missed calls by agent phone number')
 
@@ -222,3 +225,4 @@ if __name__ == '__main__':
     elif args.write:
         writeToJson(timeparse(theReport))
     else: print 'Run %s -h for usage' % (__file__)
+    # }}}
