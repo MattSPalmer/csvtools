@@ -113,11 +113,28 @@ def timeparse(calls):
 # }}}
 
 # drawgraph {{{
-def drawgraph(*args, **kwargs):
+def drawgraph(**kwargs):
     # iterate externally
-    # title (e.g. date)
-    # axis: [list]
-    # rows based on axis
+
+    title = kwargs['title']
+    datagen = kwargs['datagen']
+    data = kwargs.get('data', None)
+    axis = kwargs['axis']
+
+    graph = []
+    graph.append(title)
+    for row in axis:
+        rowstring = ''
+        padding = len(max(axis, key=len))
+
+        rowstring += '{0:>{1}}| '.format(row, padding)
+
+        for n in datagen(row,data):
+            rowstring += '{:<2}'.format(n)
+
+        graph.append(rowstring)
+    for row in graph:
+        print row
 # }}}
 
 # writeToJson {{{
@@ -163,6 +180,9 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--graphbyhour', action='store_true',
             help='graph calls by hour and day')
 
+    parser.add_argument('-t', '--testing', action='store_true',
+            help='testing')
+
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
@@ -181,5 +201,18 @@ if __name__ == '__main__':
         drawgraph(timeparse(theReport))
     elif args.write:
         writeToJson(timeparse(theReport))
+    elif args.testing:
+        def datagen(row, data):
+            for n in row:
+                if n in 'aeiou':
+                    yield 'v'
+                else:
+                    yield 'c'
+        params = {}
+        params['title'] = 'Names'
+        params['datagen'] = datagen
+        params['axis'] = ['Bobby', 'Susan', 'Montgomery', 'Joe', 'Ashley']
+        drawgraph(**params)
+
     else: print 'Run %s -h for usage' % (__file__)
     # }}}
