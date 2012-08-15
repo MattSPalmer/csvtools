@@ -150,16 +150,14 @@ def byday(datagroup, **opts):
     prefunc = opts['prefunc']
     iterfunc = opts['iterfunc']
 
-    prefunc()
-
-    params = dict(datagen=generator)
+    params = dict(datagen=prefunc())
 
     for year, months in sorted(datagroup.iteritems()):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
 
-                iterfunc()
-
+                params = iterfunc(params, year, month, day, hours)
+                
                 drawgraph(**params)
 
                 raw_input('Press Enter to continue...')
@@ -175,15 +173,17 @@ def byhour():
                         yield agentKeys.get(call, '+')[0]
                     else:
                         yield '-'
+        return generator
 
 
-    def iterfunc():
+    def iterfunc(params, year, month, day, hours):
         dayOfWeek = day_name[weekday(year, month, day)]
 
         params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
                 month_name[month], day, year)
         params['axis'] = [n for n in range(7, 22)]
         params['data'] = hours
+        return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
 
@@ -197,8 +197,9 @@ def byagent():
             for call in data:
                 if agentKeys.get(call, '') == row:
                     yield '+'
+        return generator
 
-    def iterfunc():
+    def iterfunc(params, year, month, day, hours):
         dayOfWeek = day_name[weekday(year, month, day)]
         agents = list(set(agentKeys.values()))
         incoming = reduce(lambda x, y: x+y, hours.values())
@@ -207,6 +208,7 @@ def byagent():
                 month_name[month], day, year)
         params['axis'] = agents
         params['data'] = incoming
+        return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
 
