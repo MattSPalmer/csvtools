@@ -68,19 +68,6 @@ def missed(calls):
         print '%s/%s: %d' % (k[0], k[1], v)
 # }}}
 
-# agents {{{
-def agents(calls):
-    """Given a report detailing incoming calls, return and print a dict of
-    the form: {name/number of agent}: {number of calls answered}"""
-    breakdown   = calls.toDict()['transfer_to_number']
-    agentdict   = dict(Counter(breakdown))
-    for agentNum, callNum in agentdict.iteritems():
-        agentNumPretty = typeutil.formatPhoneNum(agentNum)
-        agentName = agentKeys.get(agentNumPretty, agentNumPretty)
-        print agentName, ':', callNum
-    print ''
-# }}}
-
 # callers {{{
 def callers(calls):
     """Given a report detailing incoming calls, return the incoming phone
