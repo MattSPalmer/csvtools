@@ -8,12 +8,12 @@ import operator
 import os
 import typeutil
 
-from calendar import month_name
+from calendar    import month_name, day_name, weekday
 from collections import Counter
-from datetime import datetime
+from datetime    import datetime
 
 agentKeys = confidential.agentKeys
-sales = confidential.sales
+sales     = confidential.sales
 # }}}
 
 # Classes {{{
@@ -125,7 +125,12 @@ def drawgraph(**kwargs):
     axis = kwargs['axis']
 
     graph = []
+
+
+    graph.append('\n\n')
     graph.append(title)
+    graph.append('-'*len(title))
+
     for row in axis:
         rowstring = ''
         padding = len(str(max(axis)))
@@ -151,8 +156,11 @@ def writeToJson(daydata, dataname='data'):
 # }}}
 
 # Products {{{
+
 # byhour {{{
 def byhour(datagroup):
+    os.system('clear')
+    print 50*'\n'
 
     def generator(row, data):
         for call in data[row]:
@@ -162,17 +170,23 @@ def byhour(datagroup):
                 else:
                     yield '-'
 
-    params = dict([["datagen", generator]])
+    params = dict(datagen=generator)
 
     for year, months in sorted(datagroup.iteritems()):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
-                params['title'] = '{0} {1}, {2}\n'.format(month_name[month],
-                        day, year)
+
+                dayOfWeek = day_name[weekday(year, month, day)]
+
+
+                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                        month_name[month], day, year)
                 params['axis'] = [n for n in range(7, 22)]
                 params['data'] = hours
 
                 drawgraph(**params)
+
+                raw_input('Press Enter to continue...')
 # }}}
 
 # }}}
