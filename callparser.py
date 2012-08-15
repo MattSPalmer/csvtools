@@ -187,17 +187,6 @@ def byhour():
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
 
-
-<<<<<<< HEAD
-                weekday_name = day_name[weekday(year, month, day)]
-                agents = list(set(agentKeys.values()))
-                incoming = reduce(lambda x, y: x+y, hours.values())
-
-                params['title'] = '{0} {1} {2}, {3}'.format(weekday_name,
-                        month_name[month], day, year)
-                params['axis'] = agents
-                params['data'] = incoming
-=======
 # }}}
 
 # byagent {{{
@@ -221,7 +210,6 @@ def byagent():
         return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
->>>>>>> too-modular
 
 
 # }}}
