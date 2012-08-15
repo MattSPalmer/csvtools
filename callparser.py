@@ -234,7 +234,7 @@ if __name__ == '__main__':
             '''))
     # }}}
 
-        # Arguments {{{
+    # Arguments {{{
     parser.add_argument('-a', '--agents', action='store_true',
             help='display missed calls by agent phone number')
 
