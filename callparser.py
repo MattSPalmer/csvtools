@@ -163,6 +163,12 @@ def byday(datagroup, **opts):
                 raw_input('Press Enter to continue...')
 # }}}
 
+# multiday {{{
+def multiday():
+
+
+# }}}
+
 # byhour {{{
 def byhour():
     def prefunc():
