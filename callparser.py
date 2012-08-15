@@ -118,7 +118,6 @@ def timeparse(calls):
 # Basic Output {{{
 # drawgraph {{{
 def drawgraph(**kwargs):
-    # iterate externally
     title = kwargs['title']
     datagen = kwargs['datagen']
     data = kwargs.get('data', None)
@@ -158,13 +157,15 @@ def writeToJson(daydata, dataname='data'):
 # Products {{{
 
 # byhour {{{
-def byhour(datagroup):
+def byhour(datagroup, **opts):
     os.system('clear')
     print 50*'\n'
 
+    verboten = opts.get('verboten', []) + sales[:]
+
     def generator(row, data):
         for call in data[row]:
-            if agentKeys.get(call, '') not in sales:
+            if agentKeys.get(call, '') not in verboten:
                 if call:
                     yield agentKeys.get(call, '+')[0]
                 else:
@@ -178,11 +179,40 @@ def byhour(datagroup):
 
                 dayOfWeek = day_name[weekday(year, month, day)]
 
-
                 params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
                         month_name[month], day, year)
                 params['axis'] = [n for n in range(7, 22)]
                 params['data'] = hours
+
+                drawgraph(**params)
+
+                raw_input('Press Enter to continue...')
+# }}}
+
+# byagent {{{
+def byagent(datagroup, **opts):
+    os.system('clear')
+    print 50*'\n'
+
+    def generator(row, data):
+        for call in data:
+            if agentKeys.get(call, '') == row:
+                yield '+'
+
+    params = dict(datagen=generator)
+
+    for year, months in sorted(datagroup.iteritems()):
+        for month, days in sorted(months.iteritems()):
+            for day, hours in sorted(days.iteritems()):
+
+                dayOfWeek = day_name[weekday(year, month, day)]
+                agents = list(set(agentKeys.values()))
+                incoming = reduce(lambda x, y: x+y, hours.values())
+
+                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                        month_name[month], day, year)
+                params['axis'] = agents
+                params['data'] = incoming
 
                 drawgraph(**params)
 
@@ -239,7 +269,7 @@ if __name__ == '__main__':
     elif args.callers:
         callers(theReport)
     elif args.agents:
-        agents(theReport)
+        byagent(timeparse(theReport))
     elif args.graphbyhour:
         byhour(timeparse(theReport))
     elif args.write:
