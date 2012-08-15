@@ -164,9 +164,9 @@ def byhour(datagroup, **opts):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
 
-                dayOfWeek = day_name[weekday(year, month, day)]
+                weekday_name = day_name[weekday(year, month, day)]
 
-                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                params['title'] = '{0} {1} {2}, {3}'.format(weekday_name,
                         month_name[month], day, year)
                 params['axis'] = [n for n in range(7, 22)]
                 params['data'] = hours
@@ -192,11 +192,11 @@ def byagent(datagroup, **opts):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
 
-                dayOfWeek = day_name[weekday(year, month, day)]
+                weekday_name = day_name[weekday(year, month, day)]
                 agents = list(set(agentKeys.values()))
                 incoming = reduce(lambda x, y: x+y, hours.values())
 
-                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                params['title'] = '{0} {1} {2}, {3}'.format(weekday_name,
                         month_name[month], day, year)
                 params['axis'] = agents
                 params['data'] = incoming

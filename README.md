@@ -10,7 +10,7 @@ The main executable is **callparser**, which parses data from CSV reports genera
 
 **-h, --help**: display available options.
 
-**-a, --agents**: display missed calls by agent phone number
+**-a, --agents**: display calls by agent per day
 
 **-c, --callers**: display each incoming caller with number of times called
 
