@@ -165,6 +165,19 @@ def byday(datagroup, **opts):
 
 # multiday {{{
 def multiday():
+    prefunc = opts['prefunc']
+    iterfunc = opts['iterfunc']
+
+    params = dict(datagen=prefunc())
+
+    for year, months in sorted(datagroup.iteritems()):
+        for month, days in sorted(months.iteritems()):
+
+            for day, hours in sorted(days.iteritems()):
+
+            params = iterfunc(params, year, month, day, hours)
+            
+            drawgraph(**params)
 
 
 # }}}
