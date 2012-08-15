@@ -1,14 +1,34 @@
 #!/usr/bin/env python
 
+# Declarations {{{
+import confidential
 import csvtools
+import json
+import operator
+import os
 import typeutil
-from collections import Counter
-from confidential import agentKeys
 
-# Decorators
+from calendar    import month_name, day_name, weekday
+from collections import Counter
+from datetime    import datetime
+
+agentKeys = confidential.agentKeys
+sales     = confidential.sales
+# }}}
+
+# Classes {{{
+class AutoVivification(dict):
+    def __getitem__(self, item):
+        try:
+            return dict.__getitem__(self, item)
+        except KeyError:
+            value = self[item] = type(self)()
+            return value
+# }}}
+
+# Decorators {{{
 def benchmark(func):
-    """A decorator that prints the time a function takes
-    to execute."""
+    """A decorator that prints the time a function takes to execute."""
     import time
     def wrapper(*args, **kwargs):
         t = time.clock()
@@ -18,17 +38,17 @@ def benchmark(func):
     return wrapper
 
 def logging(func):
-    """
-    A decorator that logs the activity of the script.
-    (it actually just prints it, but it could be logging!)
-    """
+    """A decorator that logs the activity of the script. (it actually just
+    prints it, but it could be logging!)"""
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
         print func.__name__, args, kwargs
         return res
     return wrapper
+# }}}
 
-# Output functions
+# Parsing {{{
+# missed {{{
 def missed(calls):
     """Given a report detailing incoming calls, print data on calls missed
     organized by date."""
@@ -46,7 +66,9 @@ def missed(calls):
 
     for k, v in period.iteritems():
         print '%s/%s: %d' % (k[0], k[1], v)
+# }}}
 
+# agents {{{
 def agents(calls):
     """Given a report detailing incoming calls, return and print a dict of
     the form: {name/number of agent}: {number of calls answered}"""
@@ -57,7 +79,9 @@ def agents(calls):
         agentName = agentKeys.get(agentNumPretty, agentNumPretty)
         print agentName, ':', callNum
     print ''
+# }}}
 
+# callers {{{
 def callers(calls):
     """Given a report detailing incoming calls, return the incoming phone
     numbers and the number of times called."""
@@ -65,85 +89,111 @@ def callers(calls):
     incoming = dict(Counter(calls.toDict()['ani']))
     for k, v in incoming.iteritems():
         print k, v
+# }}}
 
-def byhour(calls):
-    """Given a report detailing incoming calls over a specific date range,
-    return a bar graph of hourly calls per day."""
-    import operator
-    import os
+# timeparse {{{
+def timeparse(calls):
+    # Isolate date strings and convert to date format from string, ignoring the
+    # header row when iterating over calls
+    def toDate(datestr):
+        return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
+    calls.filter('activity_info', query='Customer Care')
+    calls.removeColumns("activity_info", "ani", "call_duration")
+    for call in calls[1:]:
+        call[0] = toDate(call[0])
 
-    # clear the terminal window
+    # Hash the hours of each call to the day of each call.
+    timestruct = AutoVivification()
+    for call in calls[1:]:
+        (year, month, day, hour) = (call[0].year,
+                call[0].month, call[0].day, call[0].hour)
+        timestruct[year][month][day][hour] = timestruct[year][month][day].get(
+                hour, [])
+        timestruct[year][month][day][hour].append(call[1])
+    return timestruct
+# }}}
+
+# }}}
+
+# Basic Output {{{
+# drawgraph {{{
+def drawgraph(**kwargs):
+    # iterate externally
+    title = kwargs['title']
+    datagen = kwargs['datagen']
+    data = kwargs.get('data', None)
+    axis = kwargs['axis']
+
+    graph = []
+
+
+    graph.append('\n\n')
+    graph.append(title)
+    graph.append('-'*len(title))
+
+    for row in axis:
+        rowstring = ''
+        padding = len(str(max(axis)))
+
+        rowstring += '{0:>{1}}| '.format(row, padding)
+
+        for n in datagen(row,data):
+            rowstring += '{:<2}'.format(n)
+
+        graph.append(rowstring)
+    for row in graph:
+        print row
+# }}}
+
+# writeToJson {{{
+def writeToJson(daydata, dataname='data'):
+    dataname += '.json'
+    f = open(dataname, 'wb')
+    f.write(json.dumps(daydata))
+    f.close()
+# }}}
+
+# }}}
+
+# Products {{{
+
+# byhour {{{
+def byhour(datagroup):
     os.system('clear')
+    print 50*'\n'
 
-    # prepare for readable dates
-    monthhash = {
-        1:  'January',
-        2:  'February',
-        3:  'March',
-        4:  'April',
-        5:  'May',
-        6:  'June',
-        7:  'July',
-        8:  'August',
-        9:  'September',
-        10: 'October',
-        11: 'November',
-        12: 'December'}
+    def generator(row, data):
+        for call in data[row]:
+            if agentKeys.get(call, '') not in sales:
+                if call:
+                    yield agentKeys.get(call, '+')[0]
+                else:
+                    yield '-'
 
-    # isolate date strings and convert to date format from string
-    dates = calls.toDict()['date_added']
+    params = dict(datagen=generator)
 
-    # hash the hours of each call to the day of each call.
-    days = {}
-    for i in dates:
-        day = (i.year, i.month, i.day)
-        days[day] = days.get(day, [])
-        days[day].append(i.hour)
+    for year, months in sorted(datagroup.iteritems()):
+        for month, days in sorted(months.iteritems()):
+            for day, hours in sorted(days.iteritems()):
 
-    # reduce the value of each key from a list to a count per hour
-    for j in days.keys():
-        days[j] = dict(Counter(days[j]))
+                dayOfWeek = day_name[weekday(year, month, day)]
 
-    # creating and drawing the graph for each day (key) and set of hour counts (values)
-    for day, hours in sorted(days.iteritems()):
-        graph = []
-        hourstring = ''
 
-        # What day are we looking at?
-        graph.insert(0, '{0} {1}, {2}\n'.format(monthhash[day[1]], day[2], day[0]))
+                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                        month_name[month], day, year)
+                params['axis'] = [n for n in range(7, 22)]
+                params['data'] = hours
 
-        # A horizontal axis of hours of the day
-        for n in range(0, 24): 
-            hourstring += '{:<3}'.format(n)
-        graph.insert(0, hourstring)
-        graph.insert(0, '='*72)
+                drawgraph(**params)
 
-        # Find the max number of calls per hour in this day to determine the
-        # number of rows we need.
-        countmax = max(hours.iteritems(), key=operator.itemgetter(1))[1]
-        for j in range(0, countmax):
-            # Create a row of the graph.
-            row = ''
-            for k in range(0, 24):
-                hours[k] = hours.get(k, 0)      # Add keys for 0-call hours
+                raw_input('Press Enter to continue...')
+# }}}
 
-                # only print our symbol (+) if here at row n, there were at
-                # least n calls at this hour
-                if j < hours[k]: row += '+  '
-                else: row += '   '
-            graph.insert(0, row)
-
-        # normalize the height, since we want visual continuity
-        print '\n'*50
-        for line in graph:
-            print line
-
-        raw_input("Press Enter to continue...") 
-        os.system('clear')
-
+# }}}
 
 
 if __name__ == '__main__':
+    # Arg Prep {{{
     import argparse
     import textwrap
     parser = argparse.ArgumentParser(
@@ -158,7 +208,9 @@ if __name__ == '__main__':
             transfer_to_number
             phone_label
             '''))
+    # }}}
 
+        # Arguments {{{
     parser.add_argument('-a', '--agents', action='store_true',
             help='display missed calls by agent phone number')
 
@@ -171,18 +223,27 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--write', action='store_true',
             help='write input to new file')
 
-    parser.add_argument('-b', '--byhour', action='store_true',
-            help='display calls by hour and day')
+    parser.add_argument('-g', '--graphbyhour', action='store_true',
+            help='graph calls by hour and day')
 
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
+    # }}}
 
+    # Logic  {{{
     theReport = csvtools.Report(args.reportfile)
 
-    if args.missed: missed(theReport)
-    elif args.callers: callers(theReport)
-    elif args.agents: agents(theReport)
-    elif args.byhour: byhour(theReport)
-    elif args.write: theReport.write()
+    if args.missed:
+        missed(theReport)
+    elif args.callers:
+        callers(theReport)
+    elif args.agents:
+        agents(theReport)
+    elif args.graphbyhour:
+        byhour(timeparse(theReport))
+    elif args.write:
+        writeToJson(timeparse(theReport))
+
     else: print 'Run %s -h for usage' % (__file__)
+    # }}}
