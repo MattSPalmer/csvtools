@@ -4,7 +4,7 @@ This is more an exercise than anything, since the main module probably duplicate
 
 Nevertheless:
 
-csvtools provides simple analytics on csv files containing report data, chiefly .
+csvtools provides simple analytics on csv files containing report data.
 
 The main executable is **callparser**, which parses data from CSV reports generated from IfByPhone, an online call routing service, according to several options.
 

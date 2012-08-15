@@ -219,11 +219,10 @@ if __name__ == '__main__':
             Parse a report file from IfByPhone with the following content:
 
             date_added
-            dnis
+            activity_info
             ani
             call_duration
             transfer_to_number
-            phone_label
             '''))
     # }}}
 
