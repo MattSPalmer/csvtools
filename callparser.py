@@ -97,8 +97,8 @@ def timeparse(calls):
     # header row when iterating over calls
     def toDate(datestr):
         return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
-
-    calls.removeColumns("dnis","ani","call_duration","phone_label")
+    calls.filter('activity_info', query='Customer Care')
+    calls.removeColumns("activity_info", "ani", "call_duration")
     for call in calls[1:]:
         call[0] = toDate(call[0])
 
