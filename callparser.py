@@ -72,7 +72,7 @@ def missed(calls):
 def callers(calls):
     """Given a report detailing incoming calls, return the incoming phone
     numbers and the number of times called."""
-    calls.filter('transfer_to_number', '', inverse=True)
+    # calls.filter('transfer_to_number', '', inverse=True)
     incoming = dict(Counter(calls.toDict()['ani']))
     for k, v in incoming.iteritems():
         print k, v
@@ -142,21 +142,15 @@ def writeToJson(daydata, dataname='data'):
 # }}}
 
 # Products {{{
-
-# byhour {{{
-def byhour(datagroup, **opts):
+# byday {{{
+def byday(datagroup, **opts):
     os.system('clear')
     print 50*'\n'
 
-    verboten = opts.get('verboten', []) + sales[:]
+    prefunc = opts['prefunc']
+    iterfunc = opts['iterfunc']
 
-    def generator(row, data):
-        for call in data[row]:
-            if agentKeys.get(call, '') not in verboten:
-                if call:
-                    yield agentKeys.get(call, '+')[0]
-                else:
-                    yield '-'
+    prefunc()
 
     params = dict(datagen=generator)
 
@@ -164,46 +158,59 @@ def byhour(datagroup, **opts):
         for month, days in sorted(months.iteritems()):
             for day, hours in sorted(days.iteritems()):
 
-                dayOfWeek = day_name[weekday(year, month, day)]
-
-                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
-                        month_name[month], day, year)
-                params['axis'] = [n for n in range(7, 22)]
-                params['data'] = hours
+                iterfunc()
 
                 drawgraph(**params)
 
                 raw_input('Press Enter to continue...')
 # }}}
 
+# byhour {{{
+def byhour():
+    def prefunc():
+        def generator(row, data):
+            for call in data[row]:
+                if agentKeys.get(call, '') not in sales:
+                    if call:
+                        yield agentKeys.get(call, '+')[0]
+                    else:
+                        yield '-'
+
+
+    def iterfunc():
+        dayOfWeek = day_name[weekday(year, month, day)]
+
+        params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                month_name[month], day, year)
+        params['axis'] = [n for n in range(7, 22)]
+        params['data'] = hours
+    
+    return {'prefunc': prefunc, 'iterfunc': iterfunc}
+
+
+# }}}
+
 # byagent {{{
-def byagent(datagroup, **opts):
-    os.system('clear')
-    print 50*'\n'
+def byagent():
+    def prefunc():
+        def generator(row, data):
+            for call in data:
+                if agentKeys.get(call, '') == row:
+                    yield '+'
 
-    def generator(row, data):
-        for call in data:
-            if agentKeys.get(call, '') == row:
-                yield '+'
+    def iterfunc():
+        dayOfWeek = day_name[weekday(year, month, day)]
+        agents = list(set(agentKeys.values()))
+        incoming = reduce(lambda x, y: x+y, hours.values())
 
-    params = dict(datagen=generator)
+        params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
+                month_name[month], day, year)
+        params['axis'] = agents
+        params['data'] = incoming
+    
+    return {'prefunc': prefunc, 'iterfunc': iterfunc}
 
-    for year, months in sorted(datagroup.iteritems()):
-        for month, days in sorted(months.iteritems()):
-            for day, hours in sorted(days.iteritems()):
 
-                dayOfWeek = day_name[weekday(year, month, day)]
-                agents = list(set(agentKeys.values()))
-                incoming = reduce(lambda x, y: x+y, hours.values())
-
-                params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
-                        month_name[month], day, year)
-                params['axis'] = agents
-                params['data'] = incoming
-
-                drawgraph(**params)
-
-                raw_input('Press Enter to continue...')
 # }}}
 
 # }}}
@@ -256,9 +263,9 @@ if __name__ == '__main__':
     elif args.callers:
         callers(theReport)
     elif args.agents:
-        byagent(timeparse(theReport))
+        byday(timeparse(theReport), **byagent())
     elif args.graphbyhour:
-        byhour(timeparse(theReport))
+        byday(timeparse(theReport), **byhour())
     elif args.write:
         writeToJson(timeparse(theReport))
 
