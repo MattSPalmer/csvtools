@@ -3,6 +3,7 @@
 # Declarations {{{
 import confidential
 import csvtools
+import fetch_report
 import json
 import operator
 import os
@@ -14,8 +15,8 @@ from datetime    import datetime
 
 agentKeys = confidential.agentKeys
 sales     = confidential.sales
-# }}}
 
+# }}}
 # Classes {{{
 class AutoVivification(dict):
     def __getitem__(self, item):
@@ -24,8 +25,8 @@ class AutoVivification(dict):
         except KeyError:
             value = self[item] = type(self)()
             return value
-# }}}
 
+# }}}
 # Decorators {{{
 def benchmark(func):
     """A decorator that prints the time a function takes to execute."""
@@ -45,8 +46,8 @@ def logging(func):
         print func.__name__, args, kwargs
         return res
     return wrapper
-# }}}
 
+# }}}
 # Parsing {{{
 # missed {{{
 def missed(calls):
@@ -67,7 +68,6 @@ def missed(calls):
     for k, v in period.iteritems():
         print '%s/%s: %d' % (k[0], k[1], v)
 # }}}
-
 # callers {{{
 def callers(calls):
     """Given a report detailing incoming calls, return the incoming phone
@@ -77,7 +77,6 @@ def callers(calls):
     for k, v in incoming.iteritems():
         print k, v
 # }}}
-
 # timeparse {{{
 def timeparse(calls):
     # Isolate date strings and convert to date format from string, ignoring the
@@ -101,7 +100,6 @@ def timeparse(calls):
 # }}}
 
 # }}}
-
 # Basic Output {{{
 # drawgraph {{{
 def drawgraph(**kwargs):
@@ -130,7 +128,6 @@ def drawgraph(**kwargs):
     for row in graph:
         print row
 # }}}
-
 # writeToJson {{{
 def writeToJson(daydata, dataname='data'):
     dataname += '.json'
@@ -138,9 +135,7 @@ def writeToJson(daydata, dataname='data'):
     f.write(json.dumps(daydata))
     f.close()
 # }}}
-
 # }}}
-
 # Products {{{
 # byday {{{
 def byday(datagroup, **opts):
@@ -162,7 +157,6 @@ def byday(datagroup, **opts):
 
                 raw_input('Press Enter to continue...')
 # }}}
-
 # byhour {{{
 def byhour():
     def prefunc():
@@ -188,7 +182,6 @@ def byhour():
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
 
 # }}}
-
 # byagent {{{
 def byagent():
     def prefunc():
@@ -210,12 +203,8 @@ def byagent():
         return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
-
-
 # }}}
-
 # }}}
-
 
 if __name__ == '__main__':
     # Arg Prep {{{
@@ -233,11 +222,7 @@ if __name__ == '__main__':
             transfer_to_number
             '''))
     # }}}
-
     # Arguments {{{
-    parser.add_argument('-a', '--agents', action='store_true',
-            help='display missed calls by agent phone number')
-
     parser.add_argument('-c', '--callers', action='store_true',
             help='display each incoming caller with number of times called')
 
@@ -247,14 +232,17 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--write', action='store_true',
             help='write input to new file')
 
+    parser.add_argument('-a', '--agents', action='store_true',
+            help='display missed calls by agent name and hour')
+
     parser.add_argument('-g', '--graphbyhour', action='store_true',
             help='graph calls by hour and day')
 
     parser.add_argument('reportfile')
 
     args = parser.parse_args()
-    # }}}
 
+    # }}}
     # Logic  {{{
     theReport = csvtools.Report(args.reportfile)
 
@@ -270,4 +258,5 @@ if __name__ == '__main__':
         writeToJson(timeparse(theReport))
 
     else: print 'Run %s -h for usage' % (__file__)
+
     # }}}
