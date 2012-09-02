@@ -259,7 +259,7 @@ def main():
                 'Run callparser -h for usage')
     elif args.date:
         (start, end) = args.date
-        reportfile = fetch_report.downloadcsv(start, end, conf.apikey)
+        reportfile, res = fetch_report.downloadcsv(start, end, conf.apikey) 
     elif args.localfile:
         reportfile = args.localfile
     else:
