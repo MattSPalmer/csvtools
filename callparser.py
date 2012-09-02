@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Declarations {{{
-import confidential
+import confidential as conf
 import csvtools
 import fetch_report
 import json
@@ -13,8 +13,8 @@ from calendar    import month_name, day_name, weekday
 from collections import Counter
 from datetime    import datetime
 
-agentKeys = confidential.agentKeys
-sales     = confidential.sales
+agentKeys = conf.agentKeys
+sales     = conf.sales
 
 # }}}
 # Classes {{{
@@ -206,7 +206,7 @@ def byagent():
 # }}}
 # }}}
 
-if __name__ == '__main__':
+def main():
     # Arg Prep {{{
     import argparse
     import textwrap
@@ -221,8 +221,20 @@ if __name__ == '__main__':
             call_duration
             transfer_to_number
             '''))
+
+    class ArgumentError(BaseException):
+        pass
     # }}}
     # Arguments {{{
+
+    # determine input.
+    parser.add_argument('-f', '--localfile',
+            help='process a local report file (csv)')
+
+    parser.add_argument('-d', '--date', nargs=2,
+            help='download a report file between two dates of format `yyyymmdd`')
+
+    # determine output.
     parser.add_argument('-c', '--callers', action='store_true',
             help='display each incoming caller with number of times called')
 
@@ -238,13 +250,22 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--graphbyhour', action='store_true',
             help='graph calls by hour and day')
 
-    parser.add_argument('reportfile')
-
     args = parser.parse_args()
 
     # }}}
     # Logic  {{{
-    theReport = csvtools.Report(args.reportfile)
+    if args.date and args.localfile:
+        raise ArgumentError('More than one input specified. '
+                'Run callparser -h for usage')
+    elif args.date:
+        (start, end) = args.date
+        reportfile = fetch_report.downloadcsv(start, end, conf.apikey)
+    elif args.localfile:
+        reportfile = args.localfile
+    else:
+        raise ArgumentError('No input specified. Run callparser -h for usage')
+
+    theReport = csvtools.Report(reportfile)
 
     if args.missed:
         missed(theReport)
@@ -257,6 +278,10 @@ if __name__ == '__main__':
     elif args.write:
         writeToJson(timeparse(theReport))
 
-    else: print 'Run %s -h for usage' % (__file__)
+    else:
+        raise ArgumentError('No report type specified. Run callparser -h for usage')
 
     # }}}
+
+if __name__ == '__main__':
+    main()
