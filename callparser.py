@@ -4,10 +4,8 @@
 import confidential as conf
 import datetime as dt
 import json
-import typeutil
 
 from calendar    import month_name, day_name, weekday
-from collections import Counter
 
 agent_keys = conf.agent_keys
 sales      = conf.sales
@@ -42,34 +40,6 @@ class AutoVivification(dict):
             return value
 # }}}
 # Parsing {{{
-# missed {{{
-def missed(calls):
-    """Given a report detailing incoming calls, print data on calls missed
-    organized by date."""
-    # Instantiate a Report instance from a file (most likely passed as an argument)
-    # Using Report's toDict method, obtain the list of agent phone numbers by
-    # call received.
-    breakdown   = calls.toDict()['transfer_to_number']
-    # From that list, filter only the calls that were not answered.
-    missed      = dict(Counter(breakdown))['']
-    period      = typeutil.days(calls.toDict()['date_added'])
-
-    print "%s\n%s\n%d out of %d, %d days. Average: %d a day.\n" % (
-            calls, len(calls)*'=', missed, len(breakdown),
-            len(period), missed / len(period))
-
-    for k, v in period.iteritems():
-        print '%s/%s: %d' % (k[0], k[1], v)
-# }}}
-# callers {{{
-def callers(calls):
-    """Given a report detailing incoming calls, return the incoming phone
-    numbers and the number of times called."""
-    # calls.filter('transfer_to_number', '', inverse=True)
-    incoming = dict(Counter(calls.toDict()['ani']))
-    for k, v in incoming.iteritems():
-        print k, v
-# }}}
 # timeparse {{{
 def timeparse(calls):
     # Isolate date strings and convert to date format from string, ignoring the
