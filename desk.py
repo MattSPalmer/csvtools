@@ -75,10 +75,10 @@ class Case:
         if self.data['case_status_type'] in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
         return '\n'.join(lines).encode('utf-8')
-
     # }}}
     # DeskSearchResult {{{
 class DeskSearchResult:
+        # __init__ {{{
     def __init__(self, all_pages=False, **params):
         self.data = getFromDesk('cases', **params)
         self.params = params
@@ -106,11 +106,23 @@ class DeskSearchResult:
         for result in self.results:
             caseId = result['case']['id']
             self.cases[caseId] = Case(result['case'])
-                
-
+        # }}}
     def __repr__(self):
-        return '{0}, {1}, {2}'.format(
-                self.total, self.count, self.pages)
+        lines = []
+
+        now = dt.datetime.now().strftime('%m/%d/%Y %H:%M:%S')
+        kmax = max([len(n) for n in self.params.keys()])
+        vmax = max([len(n) for n in self.params.values()])
+
+        lines.append("\nSearch run at {}".format(now))
+        lines.append("="*len(lines[0])+'\n')
+        lines.append('{:^34}'.format('PARAMETERS'))
+        lines.append('{:^34}'.format('-'*10))
+        for k, v in sorted(self.params.iteritems()):
+            lines.append("{0:<{2}}:{1:>{3}}".format(k, v, kmax + 2, vmax + 2))
+        lines.append('\n{0} cases over {2} pages of {1} cases each.'
+                .format(self.total, self.count, self.pages))
+        return '\n'.join(lines)
 
     def __getitem__(self, index):
         return self.cases[index]
@@ -132,9 +144,6 @@ def main():
             }
     search = DeskSearchResult(**params)
     print search
-    for case in search.itercases():
-        print case
-        print
 
 if __name__ == '__main__':
     main()
