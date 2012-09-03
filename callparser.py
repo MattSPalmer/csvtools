@@ -11,7 +11,7 @@ from calendar    import month_name, day_name, weekday
 from collections import Counter
 
 agent_keys = conf.agent_keys
-sales     = conf.sales
+sales      = conf.sales
 # }}}
 # Date Tools {{{
 today = dt.datetime.today()
@@ -41,7 +41,6 @@ class AutoVivification(dict):
         except KeyError:
             value = self[item] = type(self)()
             return value
-
 # }}}
 # Parsing {{{
 # missed {{{
@@ -176,7 +175,6 @@ def byhour():
         return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
-
 # }}}
 # byagent {{{
 def byagent():
