@@ -14,18 +14,26 @@ from collections import Counter
 
 agent_keys = conf.agent_keys
 sales     = conf.sales
-
+# }}}
+# Date Tools {{{
 today = dt.datetime.today()
-yesterday = today - dt.timedelta(days=1)
-today_str = today.date().strftime('%Y%m%d')
-yesterday_str = yesterday.date().strftime('%Y%m%d')
 
+def dtToYMD(datetime):
+    return datetime.date().strftime('%Y%m%d')
+
+def timeRange(start_dt=None, end_dt=today, delta=None):
+    if start_dt == None and delta == None:
+        raise NameError('Remember to specify either start_dt or delta.')
+    elif not start_dt:
+        start_dt = end_dt + dt.timedelta(days=delta)
+    return (dtToYMD(start_dt), dtToYMD(end_dt))
 
 arg_hash = {
-        'today': today_str,
-        'yesterday': yesterday_str
+        'today': timeRange(delta=0),
+        'yesterday': timeRange(delta=-1),
+        'week': timeRange(delta=-7),
+        'month': timeRange(delta=-30)
         }
-
 # }}}
 # Classes {{{
 class AutoVivification(dict):
@@ -165,7 +173,7 @@ def byday(datagroup, **opts):
                 
                 drawgraph(**params)
 
-                if len(months) > 1 and len(days) > 1:
+                if len(months) > 1 or len(days) > 1:
                     raw_input('Press Enter to continue...')
 # }}}
 # byhour {{{
@@ -275,7 +283,6 @@ def main():
         if len(args.date) == 1:
             args.date = args.date[0]
             args.date = arg_hash.get(args.date, args.date)
-            args.date = (args.date, args.date)
 
         (start, end) = args.date
         reportfile, res = fetch_report.downloadcsv(start, end, conf.apikey) 
