@@ -1,3 +1,6 @@
+#!usr/bin/env python
+
+# Declarations {{{
 import oauth2 as oauth
 import json
 import time
@@ -7,7 +10,8 @@ from confidential import desk_creds
 consumer = oauth.Consumer(key=desk_creds['key'], secret=desk_creds['secret'])
 token = oauth.Token(desk_creds['token'], desk_creds['token_secret'])
 client = oauth.Client(consumer, token)
-
+# }}}
+# Classes {{{
 class CaseContainer:
     def __init__(self, category, **params):
         self.data = getFromDesk(category, **params)
@@ -27,11 +31,11 @@ class Case:
 
     def __repr__(self):
         pass
-
+# }}}
+# Functions {{{
 def datetimeToEpoch(datestr):
     t = datetime.strptime(datestr, '%Y%M%d')
     return str(int(time.mktime(t.timetuple())))
-
 
 def getFromDesk(category, **params):
     base_url = 'http://shopkeep.desk.com/api/v1/'
@@ -41,6 +45,7 @@ def getFromDesk(category, **params):
         request_url += '%s=%s&' % (k, v)
     res, content = client.request(request_url, "GET")
     return json.loads(content)
+# }}}
 
 def main():
     params = {
