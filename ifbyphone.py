@@ -61,6 +61,8 @@ def main():
         if len(args.date) == 1:
             args.date = args.date[0]
             args.date = cp.arg_hash.get(args.date, args.date)
+            if type(args.date) == type(''):
+                args.date = (args.date, args.date)
 
         (start, end) = args.date
         reportfile, res = fetch_report.downloadcsv(start, end, conf.apikey) 
