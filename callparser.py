@@ -3,18 +3,28 @@
 # Declarations {{{
 import confidential as conf
 import csvtools
+import datetime as dt
 import fetch_report
 import json
-import operator
 import os
 import typeutil
 
 from calendar    import month_name, day_name, weekday
 from collections import Counter
-from datetime    import datetime
 
-agentKeys = conf.agentKeys
+agent_keys = conf.agent_keys
 sales     = conf.sales
+
+today = dt.datetime.today()
+yesterday = today - dt.timedelta(days=1)
+today_str = today.date().strftime('%Y%m%d')
+yesterday_str = yesterday.date().strftime('%Y%m%d')
+
+
+arg_hash = {
+        'today': today_str,
+        'yesterday': yesterday_str
+        }
 
 # }}}
 # Classes {{{
@@ -62,7 +72,7 @@ def missed(calls):
     period      = typeutil.days(calls.toDict()['date_added'])
 
     print "%s\n%s\n%d out of %d, %d days. Average: %d a day.\n" % (
-            args.reportfile, len(args.reportfile)*'=', missed, len(breakdown),
+            calls, len(calls)*'=', missed, len(breakdown),
             len(period), missed / len(period))
 
     for k, v in period.iteritems():
@@ -82,7 +92,7 @@ def timeparse(calls):
     # Isolate date strings and convert to date format from string, ignoring the
     # header row when iterating over calls
     def toDate(datestr):
-        return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
+        return dt.datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
     calls.filter('activity_info', query='Customer Care')
     calls.removeColumns("activity_info", "ani", "call_duration")
     for call in calls[1:]:
@@ -155,16 +165,17 @@ def byday(datagroup, **opts):
                 
                 drawgraph(**params)
 
-                raw_input('Press Enter to continue...')
+                if len(months) > 1 and len(days) > 1:
+                    raw_input('Press Enter to continue...')
 # }}}
 # byhour {{{
 def byhour():
     def prefunc():
         def generator(row, data):
             for call in data[row]:
-                if agentKeys.get(call, '') not in sales:
+                if agent_keys.get(call, '') not in sales:
                     if call:
-                        yield agentKeys.get(call, '+')[0]
+                        yield agent_keys.get(call, '+')[0]
                     else:
                         yield '-'
         return generator
@@ -187,13 +198,13 @@ def byagent():
     def prefunc():
         def generator(row, data):
             for call in data:
-                if agentKeys.get(call, '') == row:
+                if agent_keys.get(call, '') == row:
                     yield '+'
         return generator
 
     def iterfunc(params, year, month, day, hours):
         dayOfWeek = day_name[weekday(year, month, day)]
-        agents = list(set(agentKeys.values()))
+        agents = list(set(agent_keys.values()))
         incoming = reduce(lambda x, y: x+y, hours.values())
 
         params['title'] = '{0} {1} {2}, {3}'.format(dayOfWeek,
@@ -227,14 +238,14 @@ def main():
     # }}}
     # Arguments {{{
 
-    # determine input.
+    # Determine input.
     parser.add_argument('-f', '--localfile',
             help='process a local report file (csv)')
 
-    parser.add_argument('-d', '--date', nargs=2,
+    parser.add_argument('-d', '--date', nargs='+',
             help='download a report file between two dates of format `yyyymmdd`')
 
-    # determine output.
+    # Determine output.
     parser.add_argument('-c', '--callers', action='store_true',
             help='display each incoming caller with number of times called')
 
@@ -258,6 +269,14 @@ def main():
         raise ArgumentError('More than one input specified. '
                 'Run callparser -h for usage')
     elif args.date:
+        if len(args.date) > 2:
+            raise ArgumentError('More than two dates specified. '
+                    'You may only define a starting date and an ending date.')
+        if len(args.date) == 1:
+            args.date = args.date[0]
+            args.date = arg_hash.get(args.date, args.date)
+            args.date = (args.date, args.date)
+
         (start, end) = args.date
         reportfile, res = fetch_report.downloadcsv(start, end, conf.apikey) 
     elif args.localfile:
@@ -279,7 +298,8 @@ def main():
         writeToJson(timeparse(theReport))
 
     else:
-        raise ArgumentError('No report type specified. Run callparser -h for usage')
+        raise ArgumentError('No report type specified. '
+                'Run callparser -h for usage')
 
     # }}}
 
