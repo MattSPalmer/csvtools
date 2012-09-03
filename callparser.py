@@ -4,7 +4,6 @@
 import confidential as conf
 import datetime as dt
 import json
-import os
 import typeutil
 
 from calendar    import month_name, day_name, weekday
@@ -133,9 +132,6 @@ def writeToJson(daydata, dataname='data'):
 # Products {{{
 # byday {{{
 def byday(datagroup, **opts):
-    os.system('clear')
-    print 50*'\n'
-
     prefunc = opts['prefunc']
     iterfunc = opts['iterfunc']
 
