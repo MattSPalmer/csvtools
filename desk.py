@@ -75,10 +75,10 @@ class Case:
         if self.data['case_status_type'] in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
         return '\n'.join(lines).encode('utf-8')
-
     # }}}
-    # DeskSearchResult {{{
-class DeskSearchResult:
+    # CaseSearch {{{
+class CaseSearch:
+        # __init__ {{{
     def __init__(self, all_pages=False, **params):
         self.data = getFromDesk('cases', **params)
         self.params = params
@@ -106,11 +106,21 @@ class DeskSearchResult:
         for result in self.results:
             caseId = result['case']['id']
             self.cases[caseId] = Case(result['case'])
-                
-
+        # }}}
     def __repr__(self):
-        return '{0}, {1}, {2}'.format(
-                self.total, self.count, self.pages)
+        lines = []
+
+        now = dt.datetime.now().strftime('%m/%d/%Y %H:%M:%S')
+        
+        lines.append("Search run at {}".format(now))
+        lines.append("="*len(lines[0])+'\n')
+        lines.append('{:<55}'.format('Parameters'))
+        lines.append('{:<55}'.format('-'*55))
+        for k, v in sorted(self.params.iteritems()):
+            lines.append("{0:<27}:{1:>27}".format(k, v))
+        lines.append('\n{0} cases over {2} pages, {1} cases per page.'
+                .format(self.total, self.count, self.pages))
+        return '\n'.join(lines)
 
     def __getitem__(self, index):
         return self.cases[index]
@@ -130,11 +140,8 @@ def main():
             'assigned_group': 'Customer Care',
             'labels': 'Needs Update'
             }
-    search = DeskSearchResult(**params)
+    search = CaseSearch(**params)
     print search
-    for case in search.itercases():
-        print case
-        print
 
 if __name__ == '__main__':
     main()
