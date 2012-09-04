@@ -76,8 +76,8 @@ class Case:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
         return '\n'.join(lines).encode('utf-8')
     # }}}
-    # DeskSearchResult {{{
-class DeskSearchResult:
+    # CaseSearch {{{
+class CaseSearch:
         # __init__ {{{
     def __init__(self, all_pages=False, **params):
         self.data = getFromDesk('cases', **params)
@@ -111,16 +111,14 @@ class DeskSearchResult:
         lines = []
 
         now = dt.datetime.now().strftime('%m/%d/%Y %H:%M:%S')
-        kmax = max([len(n) for n in self.params.keys()])
-        vmax = max([len(n) for n in self.params.values()])
-
-        lines.append("\nSearch run at {}".format(now))
+        
+        lines.append("Search run at {}".format(now))
         lines.append("="*len(lines[0])+'\n')
-        lines.append('{:^34}'.format('PARAMETERS'))
-        lines.append('{:^34}'.format('-'*10))
+        lines.append('{:<55}'.format('Parameters'))
+        lines.append('{:<55}'.format('-'*55))
         for k, v in sorted(self.params.iteritems()):
-            lines.append("{0:<{2}}:{1:>{3}}".format(k, v, kmax + 2, vmax + 2))
-        lines.append('\n{0} cases over {2} pages of {1} cases each.'
+            lines.append("{0:<27}:{1:>27}".format(k, v))
+        lines.append('\n{0} cases over {2} pages, {1} cases per page.'
                 .format(self.total, self.count, self.pages))
         return '\n'.join(lines)
 
@@ -142,7 +140,7 @@ def main():
             'assigned_group': 'Customer Care',
             'labels': 'Needs Update'
             }
-    search = DeskSearchResult(**params)
+    search = CaseSearch(**params)
     print search
 
 if __name__ == '__main__':
