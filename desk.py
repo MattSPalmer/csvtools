@@ -47,11 +47,14 @@ def getFromDesk(category, **params):
 # Classes {{{
     # Case {{{
 class Case:
-    def __init__(self, data):
+    def __init__(self, id_num=None, data=None):
+        # TODO add logic for all argument eventualities
+        if not data:
+            data = getFromDesk('cases/'+id_num)['case']
         self.data = data
-        if self.data['user']:
+        try:
             self.user = self.data['user']['name']
-        else:
+        except KeyError:
             self.user = 'unassigned'
         self.subject = self.data['subject']
         self.status = self.data['case_status_type']
@@ -74,7 +77,25 @@ class Case:
         lines.append(u"Status: {0.status}".format(self))
         if self.data['case_status_type'] in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
+        lines.append("")
         return '\n'.join(lines).encode('utf-8')
+
+    def getInteractions(self):
+        self.data['interactions'] = getFromDesk('interactions',
+                case_id=self.id_num)
+        self.interactions = self.data['interactions']
+        return self.interactions
+
+    def getLastInteraction(self):
+        try:
+            self.data['interactions']
+        except KeyError:
+            self.getInteractions()
+        last_interaction = self.interactions['results'][-1]['interaction']
+        email_text = last_interaction['interactionable']['email']['body']
+        return (last_interaction['created_at'], email_text)
+
+
     # }}}
     # CaseSearch {{{
 class CaseSearch:
@@ -105,7 +126,7 @@ class CaseSearch:
                 self.results += newpage
         for result in self.results:
             caseId = result['case']['id']
-            self.cases[caseId] = Case(result['case'])
+            self.cases[caseId] = Case(data=result['case'])
         # }}}
     def __repr__(self):
         lines = []
@@ -114,10 +135,10 @@ class CaseSearch:
         
         lines.append("Search run at {}".format(now))
         lines.append("="*len(lines[0])+'\n')
-        lines.append('{:<55}'.format('Parameters'))
-        lines.append('{:<55}'.format('-'*55))
+        lines.append('{:<45}'.format('Parameters'))
+        lines.append('{:<45}'.format('-'*45))
         for k, v in sorted(self.params.iteritems()):
-            lines.append("{0:<27}:{1:>27}".format(k, v))
+            lines.append("{0:<22}:{1:>22}".format(k, v))
         lines.append('\n{0} cases over {2} pages, {1} cases per page.'
                 .format(self.total, self.count, self.pages))
         return '\n'.join(lines)
