@@ -32,6 +32,12 @@ def dateRange(start_dt=None, end_dt=today, delta=None):
         start_dt = end_dt + dt.timedelta(days=delta)
     return (dtObjToEpoch(start_dt), dtObjToEpoch(end_dt))
 
+def formatDeskDate(date):
+    date_format = '%Y-%m-%dT%H:%M:%S'
+    split_date = date.split('-')
+    adj_date = '-'.join(split_date[:-1])
+    return dt.datetime.strptime(adj_date, date_format)
+
 # }}}
 # Functions {{{
 def getFromDesk(category, **params):
@@ -45,58 +51,6 @@ def getFromDesk(category, **params):
     return json.loads(content)
 # }}}
 # Classes {{{
-    # Case {{{
-class Case:
-    def __init__(self, id_num=None, data=None):
-        # TODO add logic for all argument eventualities
-        if not data:
-            data = getFromDesk('cases/'+id_num)['case']
-        self.data = data
-        try:
-            self.user = self.data['user']['name']
-        except KeyError:
-            self.user = 'unassigned'
-        self.subject = self.data['subject']
-        self.status = self.data['case_status_type']
-        self.id_num = int(self.data['id'])
-        self.resolved_at = self.data.get('resolved_at', None)
-
-    def __getitem__(self, index):
-        return self.data[index]
-
-    def __repr__(self):
-       return self.output()
-
-    def output(self):
-        lines = []
-        print self.data['subject']
-        lines.append(u"Case ID: {0.id_num}".format(self))
-        lines.append(u"-"*len(lines[0]))
-        lines.append(u"Subject: {0.subject}".format(self))
-        lines.append(u"Assigned to: {0.user}".format(self))
-        lines.append(u"Status: {0.status}".format(self))
-        if self.data['case_status_type'] in ['resolved', 'closed']:
-            lines.append(u"Resolved at {0.resolved_at}".format(self))
-        lines.append("")
-        return '\n'.join(lines).encode('utf-8')
-
-    def getInteractions(self):
-        self.data['interactions'] = getFromDesk('interactions',
-                case_id=self.id_num)
-        self.interactions = self.data['interactions']
-        return self.interactions
-
-    def getLastInteraction(self):
-        try:
-            self.data['interactions']
-        except KeyError:
-            self.getInteractions()
-        last_interaction = self.interactions['results'][-1]['interaction']
-        email_text = last_interaction['interactionable']['email']['body']
-        return (last_interaction['created_at'], email_text)
-
-
-    # }}}
     # CaseSearch {{{
 class CaseSearch:
         # __init__ {{{
@@ -152,6 +106,71 @@ class CaseSearch:
 
     def refresh(self):
         __init__(self)
+    # }}}
+    # Case {{{
+class Case(object):
+    def __init__(self, id_num=None, data=None):
+        # TODO add logic for all argument eventualities
+        preferred_attrs = {'case_status_type': 'status'}
+        if not data:
+            data = getFromDesk('cases/'+id_num)['case']
+        self.data = data
+        for k, v in self.data.iteritems():
+            k = preferred_attrs.get(k, k)
+            try:
+                v = formatDeskDate(v)
+            except:
+                pass
+            setattr(self, k, v)
+
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __repr__(self):
+       return self.output()
+
+    def output(self):
+        lines = []
+        print self.data['subject']
+        lines.append(u"Case ID: {0.id}".format(self))
+        lines.append(u"-"*len(lines[0]))
+        lines.append(u"Subject: {0.subject}".format(self))
+        lines.append(u"Assigned to: {0.user}".format(self))
+        lines.append(u"Status: {0.status}".format(self))
+        if self.data['case_status_type'] in ['resolved', 'closed']:
+            lines.append(u"Resolved at {0.resolved_at}".format(self))
+        lines.append("")
+        return '\n'.join(lines).encode('utf-8')
+
+    def getInteractions(self):
+        self.data['interactions'] = getFromDesk('interactions',
+                case_id=self.id_num)
+        self.interactions = self.data['interactions']
+        return self.interactions
+
+    def getLastInteraction(self):
+        try:
+            self.data['interactions']
+        except KeyError:
+            self.getInteractions()
+        last_interaction = self.interactions['results'][-1]['interaction']
+        email_text = last_interaction['interactionable']['email']['body']
+        return (last_interaction['created_at'], email_text)
+
+
+    # }}}
+    # Interaction {{{
+class Interaction():
+    def __init__(self):
+        pass
+
+    def __getitem__(self, index):
+        pass
+
+    def __repr__(self):
+        pass
+
     # }}}
 # }}}
 
