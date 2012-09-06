@@ -15,8 +15,6 @@ class Report:
         """Read in a CSV file."""
         with open(reportFile, 'rb') as readFile:
             self.fileRows = [row for row in csv.reader(readFile)]
-            # self.fileRows = [map(typeutil.to_num, row)
-            #         for row in csv.reader(readFile)]
             readFile.close()
         self.rowBuffer = self.fileRows
         self.dateFormat = date
