@@ -78,7 +78,9 @@ class DeskObject(object):
 
 class Interaction(DeskObject):
     def __init__(self, data):
-        pref_attrs = {}
+        pref_attrs = {
+                'interactionable': 'incoming'
+                }
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
 
 class Case(DeskObject):
@@ -179,6 +181,7 @@ class CaseSearch(DeskObject):
         return '\n'.join(lines)
 
     def __getitem__(self, index):
+        index = sorted(self.cases)[index]
         return self.cases[index]
 
     def __iter__(self):
