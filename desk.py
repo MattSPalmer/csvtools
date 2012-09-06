@@ -81,8 +81,6 @@ class Interaction(DeskObject):
         pref_attrs = {}
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
 
-    def __getitem__(self, index):
-        pass
 class Case(DeskObject):
     def __init__(self, id_num=None, data=None):
         # TODO add logic for all argument eventualities
@@ -92,10 +90,17 @@ class Case(DeskObject):
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
     def __getitem__(self, index):
-        return self.data[index]
+        self.ensureInteractions()
+        index = sorted(self.interactions)[index]
+        return self.interactions[index]
 
     def __repr__(self):
        return self.output()
+
+    def __iter__(self):
+        self.ensureInteractions()
+        for int_id, interaction in sorted(self.interactions.iteritems()):
+            yield interaction
 
     def output(self):
         lines = []
@@ -119,11 +124,13 @@ class Case(DeskObject):
             self.interactions[interaction_id] = Interaction(theInteraction)
         return self.interactions
 
-    def getLastInteraction(self):
+    def ensureInteractions(self):
         try:
             self.interactions
-        except KeyError:
+        except:
             self.getInteractions()
+
+    def getLastInteraction(self):
         last_interaction = self.interactions['results'][-1]['interaction']
         email_text = last_interaction['interactionable']['email']['body']
         return (last_interaction['created_at'], email_text)
@@ -174,7 +181,7 @@ class CaseSearch(DeskObject):
     def __getitem__(self, index):
         return self.cases[index]
 
-    def itercases(self):
+    def __iter__(self):
         for caseId in sorted(self.cases.keys()):
             yield self.cases[caseId]
 
