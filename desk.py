@@ -110,7 +110,7 @@ class Case(DeskObject):
         lines.append(u"Subject: {0.subject}".format(self))
         lines.append(u"Assigned to: {0.user}".format(self))
         lines.append(u"Status: {0.status}".format(self))
-        if self.data['case_status_type'] in ['resolved', 'closed']:
+        if self.status in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
         lines.append("")
         return '\n'.join(lines).encode('utf-8')
