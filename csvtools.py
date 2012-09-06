@@ -1,8 +1,5 @@
 # Declarations {{{
 import csv
-import mylogs
-import time
-import typeutil
 from datetime import datetime
 
 now = datetime.today()
@@ -42,8 +39,6 @@ class Report:
             for row in self.rowBuffer:
                 importWriter.writerow(row)
             writingFile.close()
-        mylogs.log.info("Wrote file '%s', %s lines" % (writeFileName,
-                len(self.rowBuffer)))
 # }}}
 
 # reset {{{
