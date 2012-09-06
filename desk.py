@@ -1,6 +1,9 @@
 #!usr/bin/env python
 
-# Declarations {{{
+##################
+#  Declarations  #
+##################
+
 import datetime as dt
 import oauth2 as oauth
 import json
@@ -12,9 +15,12 @@ from confidential import desk_creds
 consumer = oauth.Consumer(key=desk_creds['key'], secret=desk_creds['secret'])
 token = oauth.Token(desk_creds['token'], desk_creds['token_secret'])
 client = oauth.Client(consumer, token)
-# }}}
-# Date Tools {{{
 today = dt.datetime.today()
+
+
+###############
+#  Functions  #
+###############
 
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
@@ -38,8 +44,6 @@ def formatDeskDate(date):
     adj_date = '-'.join(split_date[:-1])
     return dt.datetime.strptime(adj_date, date_format)
 
-# }}}
-# Functions {{{
 def getFromDesk(category, **params):
     base_url = 'http://shopkeep.desk.com/api/v1/'
     output_format = 'json'
@@ -49,9 +53,12 @@ def getFromDesk(category, **params):
     if not content:
         return res
     return json.loads(content)
-# }}}
-# Classes {{{
-    # DeskObject {{{
+
+
+#############
+#  Classes  #
+#############
+
 class DeskObject(object):
     def __init__(self, data, pref_attrs={}):
         self.data = data
@@ -65,10 +72,10 @@ class DeskObject(object):
                 setattr(self, k, DeskObject(v))
             except:
                 setattr(self, k, v)
+
     def __repr__(self):
         return str(self.data)
-    # }}}
-    # Interaction {{{
+
 class Interaction(DeskObject):
     def __init__(self, data):
         pref_attrs = {}
@@ -76,9 +83,6 @@ class Interaction(DeskObject):
 
     def __getitem__(self, index):
         pass
-
-    # }}}
-    # Case {{{
 class Case(DeskObject):
     def __init__(self, id_num=None, data=None):
         # TODO add logic for all argument eventualities
@@ -124,11 +128,7 @@ class Case(DeskObject):
         email_text = last_interaction['interactionable']['email']['body']
         return (last_interaction['created_at'], email_text)
 
-
-    # }}}
-    # CaseSearch {{{
 class CaseSearch(DeskObject):
-        # __init__ {{{
     def __init__(self, all_pages=False, **params):
         self.data = getFromDesk('cases', **params)
         self.params = params
@@ -156,7 +156,6 @@ class CaseSearch(DeskObject):
         for result in self.results:
             caseId = result['case']['id']
             self.cases[caseId] = Case(data=result['case'])
-        # }}}
     def __repr__(self):
         lines = []
 
@@ -184,8 +183,6 @@ class CaseSearch(DeskObject):
     
     def refresh(self):
         __init__(self)
-    # }}}
-# }}}
 
 def main():
     start, end = dateRange(delta=-3)
@@ -195,6 +192,7 @@ def main():
             }
     search = CaseSearch(**params)
     print search
+
 
 if __name__ == '__main__':
     main()
