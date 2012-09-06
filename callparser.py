@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# Declarations {{{
 import confidential as conf
 import datetime as dt
 import json
@@ -9,9 +8,23 @@ from calendar    import month_name, day_name, weekday
 
 agent_keys = conf.agent_keys
 sales      = conf.sales
-# }}}
-# Date Tools {{{
 today = dt.datetime.today()
+
+#############
+#  Classes  #
+#############
+
+class AutoVivification(dict):
+    def __getitem__(self, item):
+        try:
+            return dict.__getitem__(self, item)
+        except KeyError:
+            value = self[item] = type(self)()
+            return value
+
+################
+#  Date Tools  #
+################
 
 def dtToYMD(datetime):
     return datetime.date().strftime('%Y%m%d')
@@ -29,18 +42,11 @@ arg_hash = {
         'week': timeRange(delta=-7),
         'month': timeRange(delta=-30)
         }
-# }}}
-# Classes {{{
-class AutoVivification(dict):
-    def __getitem__(self, item):
-        try:
-            return dict.__getitem__(self, item)
-        except KeyError:
-            value = self[item] = type(self)()
-            return value
-# }}}
-# Parsing {{{
-# timeparse {{{
+
+#######################
+#  Parsing Functions  #
+#######################
+
 def timeparse(calls):
     # Isolate date strings and convert to date format from string, ignoring the
     # header row when iterating over calls
@@ -60,11 +66,11 @@ def timeparse(calls):
                 hour, [])
         timestruct[year][month][day][hour].append(call[1])
     return timestruct
-# }}}
 
-# }}}
-# Basic Output {{{
-# drawgraph {{{
+######################
+#  Output Functions  #
+######################
+
 def drawgraph(**kwargs):
     title = kwargs['title']
     datagen = kwargs['datagen']
@@ -90,17 +96,17 @@ def drawgraph(**kwargs):
         graph.append(rowstring)
     for row in graph:
         print row
-# }}}
-# writeToJson {{{
+
 def writeToJson(daydata, dataname='data'):
     dataname += '.json'
     f = open(dataname, 'wb')
     f.write(json.dumps(daydata))
     f.close()
-# }}}
-# }}}
-# Products {{{
-# byday {{{
+
+########################
+#  Data Organizations  #
+########################
+
 def byday(datagroup, **opts):
     prefunc = opts['prefunc']
     iterfunc = opts['iterfunc']
@@ -117,8 +123,7 @@ def byday(datagroup, **opts):
 
                 if len(months) > 1 or len(days) > 1:
                     raw_input('Press Enter to continue...')
-# }}}
-# byhour {{{
+
 def byhour():
     def prefunc():
         def generator(row, data):
@@ -141,8 +146,7 @@ def byhour():
         return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
-# }}}
-# byagent {{{
+
 def byagent():
     def prefunc():
         def generator(row, data):
@@ -163,8 +167,6 @@ def byagent():
         return params
     
     return {'prefunc': prefunc, 'iterfunc': iterfunc}
-# }}}
-# }}}
 
 def main():
     pass

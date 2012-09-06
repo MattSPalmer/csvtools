@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 def main():
-    # Arg Prep {{{
+
+    ##############
+    #  Arg Prep  #
+    ##############
+
     import callparser as cp
     import confidential as conf
     import csvtools
@@ -22,8 +26,11 @@ def main():
 
     class ArgumentError(BaseException):
         pass
-    # }}}
-    # Arguments {{{
+
+    ###############
+    #  Arguments  #
+    ###############
+
     # Determine input.
     parser.add_argument('-f', '--localfile',
             help='process a local report file (csv)')
@@ -49,8 +56,10 @@ def main():
 
     args = parser.parse_args()
 
-    # }}}
-    # Logic  {{{
+    ###########
+    #  Logic  #
+    ###########
+
     if args.date and args.localfile:
         raise ArgumentError('More than one input specified. '
                 'Run callparser -h for usage')
@@ -88,7 +97,6 @@ def main():
         raise ArgumentError('No report type specified. '
                 'Run callparser -h for usage')
 
-    # }}}
 
 if __name__ == '__main__':
     main()
