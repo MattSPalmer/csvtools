@@ -1,8 +1,6 @@
 #!usr/bin/env python
 
 import desk
-# from collections import Counter
-
 
 def main():
     search_parameters = {
@@ -19,9 +17,13 @@ def main():
         print '='*20
         for interaction in case:
             print interaction.created_at
-            print dir(interaction.mail)
+            print '-'*20
+            print interaction.incoming.email.body
+            if interaction == case[-1]:
+                continue
             raw_input('Press Enter to continue...')
-        print 'end of case.'
+        if case == search[-1]:
+            continue
         raw_input('Press Enter to continue...')
         print '\n\n'
 
