@@ -3,31 +3,29 @@
 import desk
 # from collections import Counter
 
+
 def main():
-    users = ['Stephen']
     search_parameters = {
             'status': 'open,pending',
-            'labels': 'Needs Update'
+            'labels': 'Needs Update',
+            'assigned_group': 'Customer Care',
             }
-    case_blobs = {}
 
-    for user in users:
-        case_blobs[user] = desk.CaseSearch(assigned_user=user, **search_parameters)
-        print '{}: {}'.format(user, case_blobs[user].total)
-        print '='*40
-        for case in case_blobs[user].itercases():
-            total = case.getInteractions()['total']
-            display_subj = (case.subject if len(case.subject) < 64
-                    else case.subject[:64]+'...')
-            print '[{}, {}] #{} - {}'.format(
-                    case.status[0].upper(), total, case.id_num, display_subj)
-            last_message = case.getLastInteraction()
-            print last_message[0]
-            print last_message[1]
-        print
+    search = desk.CaseSearch(**search_parameters)
+
+    for case in search:
+        print case.subject
+        print case.created_at
+        print '='*20
+        for interaction in case:
+            print interaction.created_at
+            print dir(interaction.mail)
+            raw_input('Press Enter to continue...')
+        print 'end of case.'
+        raw_input('Press Enter to continue...')
+        print '\n\n'
+
 
 
 if __name__ == '__main__':
     main()
-
-
