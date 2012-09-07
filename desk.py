@@ -50,9 +50,11 @@ def getFromDesk(category, **params):
     request_url = '%s%s.%s?%s' % (base_url, category, output_format,
             ul.urlencode(params))
     res, content = client.request(request_url, "GET")
-    if not content:
-        return res
-    return json.loads(content)
+    try:
+        return json.loads(content)
+    except:
+        print 'received a response of %s' % (res)
+        return
 
 
 #############
@@ -72,9 +74,10 @@ class DeskObject(object):
                 setattr(self, k, DeskObject(v))
             except:
                 setattr(self, k, v)
+        del self.data
 
     def __repr__(self):
-        return str(self.data)
+        return str(self.__dict__)
 
 class Interaction(DeskObject):
     def __init__(self, data):
