@@ -1,33 +1,23 @@
 #!usr/bin/env python
 
 import desk
+import cPickle as pickle
+
+def weCanPickleThat(data, filename):
+    out_f = open(filename, 'wb')
+    try:
+        pickle.dump(data, out_f)
+    finally:
+        out_f.close()
 
 def main():
-    search_parameters = {
-            'status': 'open,pending',
-            'labels': 'Needs Update',
-            'assigned_group': 'Customer Care',
-            }
+    case = desk.CaseSearch(
+            assigned_user='Matt Palmer',
+            status='open')[-1]
 
-    search = desk.CaseSearch(**search_parameters)
-
-    for case in search:
-        print case.subject
-        print case.created_at
-        print '='*20
-        for interaction in case:
-            print interaction.created_at
-            print '-'*20
-            print interaction.incoming.email.body
-            if interaction == case[-1]:
-                continue
-            raw_input('Press Enter to continue...')
-        if case == search[-1]:
-            continue
-        raw_input('Press Enter to continue...')
-        print '\n\n'
-
-
+    weCanPickleThat(case, 'nointer.dat')
+    case.getInteractions()
+    weCanPickleThat(case, 'inter.dat')
 
 if __name__ == '__main__':
     main()
