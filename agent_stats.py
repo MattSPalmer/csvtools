@@ -6,18 +6,21 @@ import cPickle as pickle
 def weCanPickleThat(data, filename):
     out_f = open(filename, 'wb')
     try:
-        pickle.dump(data, out_f)
+        pickle.dump(data, out_f, protocol=2)
     finally:
         out_f.close()
 
 def main():
-    case = desk.CaseSearch(
+    search = desk.CaseSearch(
             assigned_user='Matt Palmer',
-            status='open')[-1]
+            status='open')
 
-    weCanPickleThat(case, 'nointer.dat')
-    case.getInteractions()
+    for case in search:
+        case.getInteractions()
+
+    case = search[-1]
     weCanPickleThat(case, 'inter.dat')
+    weCanPickleThat(search, 'search.dat')
 
 if __name__ == '__main__':
     main()
