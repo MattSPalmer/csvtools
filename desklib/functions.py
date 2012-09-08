@@ -9,6 +9,9 @@ import urllib as ul
 import declarations as dc
 import time
 import json
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
@@ -38,6 +41,4 @@ def getFromDesk(category, **params):
     request_url = '%s%s.%s?%s' % (base_url, category, output_format,
             ul.urlencode(params))
     res, content = dc.client.request(request_url, "GET")
-    if not content:
-        return res
-    return json.loads(content)
+    return (res, json.loads(content))

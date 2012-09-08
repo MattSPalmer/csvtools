@@ -1,8 +1,9 @@
 #!usr/bin/env python
 
-import desk
-# from collections import Counter
+import desklib
 
+fn = desklib.functions
+cl = desklib.classes
 
 def main():
     search_parameters = {
@@ -11,7 +12,7 @@ def main():
             'assigned_group': 'Customer Care',
             }
 
-    search = desk.CaseSearch(**search_parameters)
+    search = cl.CaseSearch(**search_parameters)
 
     for case in search:
         print case.subject
@@ -19,13 +20,11 @@ def main():
         print '='*20
         for interaction in case:
             print interaction.created_at
-            print dir(interaction.mail)
+            print interaction.incoming.email.body
             raw_input('Press Enter to continue...')
         print 'end of case.'
         raw_input('Press Enter to continue...')
         print '\n\n'
-
-
 
 if __name__ == '__main__':
     main()

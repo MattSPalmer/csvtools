@@ -3,6 +3,7 @@
 import functions as fn
 import datetime as dt
 import sys
+import logging
 
 #############
 #  Classes  #
@@ -37,7 +38,11 @@ class Case(DeskObject):
         # TODO add logic for all argument eventualities
         pref_attrs = {'case_status_type': 'status'}
         if not data:
-            data = fn.getFromDesk('cases/'+id_num)['case']
+            res, content = fn.getFromDesk('cases/'+id_num)
+            try: 
+                data = content['case']
+            except:
+                logging.error('Status: %s' % res['status'])
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
     def __getitem__(self, index):
@@ -68,12 +73,15 @@ class Case(DeskObject):
 
     def getInteractions(self):
         self.interactions = {}
-        data = fn.getFromDesk('interactions', case_id=self.id)
-        for result in data['results']:
-            theInteraction = result['interaction']
-            interaction_id = theInteraction['id']
-            self.interactions[interaction_id] = Interaction(theInteraction)
-        return self.interactions
+        res, content = fn.getFromDesk('interactions', case_id=self.id)
+        try:
+            for result in content['results']:
+                theInteraction = result['interaction']
+                interaction_id = theInteraction['id']
+                self.interactions[interaction_id] = Interaction(theInteraction)
+            return self.interactions
+        except:
+            logging.error('Status: %s' % res['status'])
 
     def ensureInteractions(self):
         try:
@@ -88,12 +96,16 @@ class Case(DeskObject):
 
 class CaseSearch(DeskObject):
     def __init__(self, all_pages=False, **params):
-        self.data = fn.getFromDesk('cases', **params)
+        res, content = fn.getFromDesk('cases', **params)
+        self.data = content
         self.params = params
         self.pref_attrs = {
                 'currentPage': 'page',
                 }
-        super(CaseSearch, self).__init__(self.data, pref_attrs=self.pref_attrs)
+        try:
+            super(CaseSearch, self).__init__(self.data, pref_attrs=self.pref_attrs)
+        except:
+            logging.error('Status: %s' % res['status'])
         self.pages = divmod(self.total, self.count)[0] + 1
         self.cases = {}
         if all_pages:
