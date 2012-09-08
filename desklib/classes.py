@@ -2,6 +2,7 @@
 
 import functions as fn
 import datetime as dt
+import shelve
 import sys
 import logging
 
@@ -25,75 +26,6 @@ class DeskObject(object):
 
     def __repr__(self):
         return str(self.data)
-
-class Interaction(DeskObject):
-    def __init__(self, data):
-        pref_attrs = {
-                'interactionable': 'incoming'
-                }
-        super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
-
-class Case(DeskObject):
-    def __init__(self, id_num=None, data=None):
-        # TODO add logic for all argument eventualities
-        pref_attrs = {'case_status_type': 'status'}
-        if not data:
-            res, content = fn.getFromDesk('cases/'+id_num)
-            try: 
-                data = content['case']
-            except:
-                logging.error('Status: %s' % res['status'])
-                logging.error(content)
-        super(Case, self).__init__(data, pref_attrs=pref_attrs)
-
-    def __getitem__(self, index):
-        self.ensureInteractions()
-        index = sorted(self.interactions)[index]
-        return self.interactions[index]
-
-    def __repr__(self):
-       return self.output()
-
-    def __iter__(self):
-        self.ensureInteractions()
-        for int_id, interaction in sorted(self.interactions.iteritems()):
-            yield interaction
-
-    def output(self):
-        lines = []
-        print self.data['subject']
-        lines.append(u"Case ID: {0.id}".format(self))
-        lines.append(u"-"*len(lines[0]))
-        lines.append(u"Subject: {0.subject}".format(self))
-        lines.append(u"Assigned to: {0.user}".format(self))
-        lines.append(u"Status: {0.status}".format(self))
-        if self.status in ['resolved', 'closed']:
-            lines.append(u"Resolved at {0.resolved_at}".format(self))
-        lines.append("")
-        return '\n'.join(lines).encode('utf-8')
-
-    def getInteractions(self):
-        self.interactions = {}
-        res, content = fn.getFromDesk('interactions', case_id=self.id)
-        try:
-            for result in content['results']:
-                theInteraction = result['interaction']
-                interaction_id = theInteraction['id']
-                self.interactions[interaction_id] = Interaction(theInteraction)
-            return self.interactions
-        except:
-            logging.error('Status: %s' % res['status'])
-
-    def ensureInteractions(self):
-        try:
-            self.interactions
-        except:
-            self.getInteractions()
-
-    def getLastInteraction(self):
-        last_interaction = self.interactions['results'][-1]['interaction']
-        email_text = last_interaction['interactionable']['email']['body']
-        return (last_interaction['created_at'], email_text)
 
 class CaseSearch(DeskObject):
     def __init__(self, all_pages=False, **params):
@@ -126,7 +58,8 @@ class CaseSearch(DeskObject):
                 self.results += newpage
         for result in self.results:
             caseId = result['case']['id']
-            self.cases[caseId] = Case(data=result['case'])
+            self.cases[caseId] = Case(caseId)
+
     def __repr__(self):
         lines = []
 
@@ -155,3 +88,85 @@ class CaseSearch(DeskObject):
     
     def refresh(self):
         __init__(self)
+
+class Case(DeskObject):
+    def __init__(self, id_num):
+        # TODO add logic for all argument eventualities
+        pref_attrs = {'case_status_type': 'status'}
+
+        case_id = str(id_num)
+        case_file = shelve.open('cases', writeback=True)
+        try:
+            data = case_file[case_id]
+        except KeyError:
+            print 'Downloading case #%s...' % case_id
+            res, content = fn.getFromDesk('cases/'+case_id)
+            case_file[case_id] = data = content['case']
+        finally:
+            case_file.close()
+        super(Case, self).__init__(data, pref_attrs=pref_attrs)
+
+    def __getitem__(self, index):
+        self.ensureInteractions()
+        index = sorted(self.interactions)[index]
+        return self.interactions[index]
+
+    def __repr__(self):
+       return self.output()
+
+    def __iter__(self):
+        self.ensureInteractions()
+        for int_id, interaction in sorted(self.interactions.iteritems()):
+            yield interaction
+
+    def __len__(self):
+        return len(self.interactions.keys())
+
+    def output(self):
+        lines = []
+        print self.subject
+        lines.append(u"Case ID: {0.id}".format(self))
+        lines.append(u"-"*len(lines[0]))
+        lines.append(u"Subject: {0.subject}".format(self))
+        lines.append(u"Assigned to: {0.user}".format(self))
+        lines.append(u"Status: {0.status}".format(self))
+        if self.status in ['resolved', 'closed']:
+            lines.append(u"Resolved at {0.resolved_at}".format(self))
+        lines.append("")
+        return '\n'.join(lines).encode('utf-8')
+
+    def getInteractions(self):
+        self.interactions = {}
+        case_id = str(self.id)
+        int_file = shelve.open('interactions', writeback=True)
+        try:
+            data = int_file[case_id]
+        except KeyError:
+            print 'Downloading interactions for case #%s...' % case_id
+            res, content = fn.getFromDesk('interactions', case_id=self.id)
+            int_file[case_id] = data = content
+        finally:
+            int_file.close()
+        try:
+            for result in data['results']:
+                theInteraction = result['interaction']
+                interaction_id = theInteraction['id']
+                self.interactions[interaction_id] = Interaction(theInteraction)
+            return self.interactions
+        except:
+            logging.error('Status: %s' % res['status'])
+            sys.exit()
+
+    def ensureInteractions(self):
+        try:
+            self.interactions
+        except:
+            self.getInteractions()
+
+class Interaction(DeskObject):
+    def __init__(self, data):
+        pref_attrs = {
+                'interactionable': 'incoming',
+                'from': 'froom'
+                }
+        super(Interaction, self).__init__(data, pref_attrs=pref_attrs)

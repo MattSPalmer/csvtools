@@ -36,7 +36,6 @@ def formatDeskDate(date):
     return dt.datetime.strptime(adj_date, date_format)
 
 def getFromDesk(category, **params):
-    n = 1
     base_url = 'http://shopkeep.desk.com/api/v1/'
     output_format = 'json'
     request_url = '%s%s.%s?%s' % (base_url, category, output_format,
@@ -44,9 +43,8 @@ def getFromDesk(category, **params):
     res, content = dc.client.request(request_url, "GET")
     content = json.loads(content)
     while content.get('error', False):
-        logging.warning("Waiting %s seconds to respect Desk's API" % n) 
-        time.sleep(n)
+        logging.warning("Waiting 30 seconds to respect Desk's API") 
+        time.sleep(30)
         res, content = dc.client.request(request_url, "GET")
         content = json.loads(content)
-        n *= 2
     return (res, content)
