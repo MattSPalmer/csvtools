@@ -9,7 +9,7 @@ cl = desklib.classes
 
 def getShelvedCase(case_id):
     case_id = str(case_id)
-    case_file = shelve.open('cases.db', writeback=True)
+    case_file = shelve.open('cases', writeback=True)
     try:
         return case_file[case_id]
     except KeyError:
@@ -21,11 +21,8 @@ def getShelvedCase(case_id):
 
 def main():
     for i in range(8040, 8240):
-        print i
-        getShelvedCase(i)
+        print getShelvedCase(i).subject
 
 
 if __name__ == '__main__':
     main()
-
-

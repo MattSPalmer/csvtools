@@ -43,6 +43,7 @@ class Case(DeskObject):
                 data = content['case']
             except:
                 logging.error('Status: %s' % res['status'])
+                logging.error(content)
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
     def __getitem__(self, index):
