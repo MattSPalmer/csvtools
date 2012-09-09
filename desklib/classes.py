@@ -167,12 +167,11 @@ class Case(DeskObject):
 class Interaction(DeskObject):
     def __init__(self, data):
         pref_attrs = {
-                'interactionable': 'incoming',
-                'from': 'froom'
+                'interactionable': 'incoming'
                 }
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
 
     def __repr__(self):
         lines = []
-        lines.append('{0.direction:>4}: {0.created_at}'.format(self))
+        lines.append('{0.direction:>3}: {0.created_at}'.format(self))
         return '\n'.join(lines)
