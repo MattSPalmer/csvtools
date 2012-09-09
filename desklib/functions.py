@@ -13,8 +13,6 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
-now = dt.datetime.now()
-
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
 
@@ -32,7 +30,7 @@ def dateRange(start_dt=None, end_dt=dc.today, delta=None):
     return (dtObjToEpoch(start_dt), dtObjToEpoch(end_dt))
 
 def daysSince(days):
-    datetimeObj = now - dt.timedelta(days=days)
+    datetimeObj = dt.datetime.now() - dt.timedelta(days=days)
     return dtObjToEpoch(datetimeObj)
 
 def formatDeskDate(date):
