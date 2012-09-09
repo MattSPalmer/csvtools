@@ -171,3 +171,8 @@ class Interaction(DeskObject):
                 'from': 'froom'
                 }
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
+
+    def __repr__(self):
+        lines = []
+        lines.append('{0.direction:>4}: {0.created_at}'.format(self))
+        return '\n'.join(lines)
