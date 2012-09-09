@@ -128,7 +128,8 @@ class Case(DeskObject):
         lines.append(u"Case ID: {0.id}".format(self))
         lines.append(u"-"*len(lines[0]))
         lines.append(u"Subject: {0.subject}".format(self))
-        lines.append(u"Assigned to: {0.user}".format(self))
+        lines.append(u"Created at: {0.created_at}".format(self))
+        lines.append(u"Assigned to: {0.user.name}".format(self))
         lines.append(u"Status: {0.status}".format(self))
         if self.status in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
