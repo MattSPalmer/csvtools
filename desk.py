@@ -1,19 +1,16 @@
 #!usr/bin/env python
 
-import desklib
-
-fn = desklib.functions
-cl = desklib.classes
+import desklib.functions as fn
+import desklib.classes as cl
+import desklib.searches as s
 
 def main():
-    start, end = fn.dateRange(delta=-3)
-    params = {
-            'assigned_group': 'Customer Care',
-            'labels': 'Needs Update'
-            }
-    search = cl.CaseSearch(**params)
-    print search
-
+    for case in cl.CaseSearch(**s.user('me')):
+        print case
+        for interaction in case:
+            print interaction
+        print '\n\n'
+            
 
 if __name__ == '__main__':
     main()
