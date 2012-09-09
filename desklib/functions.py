@@ -6,12 +6,14 @@
 
 import datetime as dt
 import urllib as ul
-import declarations as dc
+import api
 import time
 import json
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
+
+today = dt.datetime.today()
 
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
@@ -22,7 +24,7 @@ def dtObjToYMD(datetimeObj):
 def dtObjToEpoch(datetimeObj):
     return str(int(time.mktime(datetimeObj.timetuple())))
 
-def dateRange(start_dt=None, end_dt=dc.today, delta=None):
+def dateRange(start_dt=None, end_dt=today, delta=None):
     if start_dt == None and delta == None:
         raise NameError('Remember to specify either start_dt or delta.')
     elif not start_dt:
@@ -44,11 +46,11 @@ def getFromDesk(category, **params):
     output_format = 'json'
     request_url = '%s%s.%s?%s' % (base_url, category, output_format,
             ul.urlencode(params))
-    res, content = dc.client.request(request_url, "GET")
+    res, content = api.client.request(request_url, "GET")
     content = json.loads(content)
     while content.get('error', False):
         logging.warning("Waiting 30 seconds to respect Desk's API") 
         time.sleep(30)
-        res, content = dc.client.request(request_url, "GET")
+        res, content = api.client.request(request_url, "GET")
         content = json.loads(content)
     return (res, content)
