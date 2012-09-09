@@ -10,6 +10,7 @@ import api
 import time
 import json
 import logging
+import shelve
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -54,3 +55,23 @@ def getFromDesk(category, **params):
         res, content = api.client.request(request_url, "GET")
         content = json.loads(content)
     return (res, content)
+
+def isMoreRecent(search):
+    case_file = shelve.open('cases')
+    case_items = { str(c.id): c.updated_at for c in search }
+    updated_cases = []
+    try:
+        for key in case_items.keys():
+            try:
+                print (case_items[key],
+                        formatDeskDate(case_file[key]['updated_at']))
+                if (case_items[key] >
+                        formatDeskDate(case_file[key]['updated_at'])):
+                    updated_cases.append(int(key))
+            except KeyError:
+                pass
+    finally:
+        case_file.close()
+    return updated_cases
+    
+

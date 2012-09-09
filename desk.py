@@ -5,8 +5,8 @@ import desklib.classes as cl
 import desklib.searches as s
 
 def main():
-    pass
-
+    search = cl.CaseSearch(**s.searches['assigned'])
+    print fn.isMoreRecent(search)
 
 if __name__ == '__main__':
     main()
