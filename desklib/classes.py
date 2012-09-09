@@ -91,11 +91,10 @@ class CaseSearch(DeskObject):
 
 class Case(DeskObject):
     def __init__(self, id_num):
-        # TODO add logic for all argument eventualities
         pref_attrs = {'case_status_type': 'status'}
-
         case_id = str(id_num)
         case_file = shelve.open('cases', writeback=True)
+
         try:
             data = case_file[case_id]
         except KeyError:
@@ -104,6 +103,7 @@ class Case(DeskObject):
             case_file[case_id] = data = content['case']
         finally:
             case_file.close()
+
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
     def __getitem__(self, index):
