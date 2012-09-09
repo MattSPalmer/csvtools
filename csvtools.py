@@ -1,31 +1,26 @@
-# Declarations {{{
 import csv
-import mylogs
-import time
-import typeutil
 from datetime import datetime
 
 now = datetime.today()
 currentDateString = '{0}-{1}-{2}'
 currentDateString = currentDateString.format(str(now.year), str(now.month),
         str(now.day))
-# }}}
+
+#############
+#  Classes  #
+#############
 
 class Report:
-    # __init__ {{{
     def __init__(self, reportFile, writeFile=None, date="%Y-%m-%d %H:%M:%S"):
         """Read in a CSV file."""
         with open(reportFile, 'rb') as readFile:
             self.fileRows = [row for row in csv.reader(readFile)]
-            # self.fileRows = [map(typeutil.to_num, row)
-            #         for row in csv.reader(readFile)]
             readFile.close()
         self.rowBuffer = self.fileRows
         self.dateFormat = date
         if writeFile == None:
             self.writeFile = '%s_write_%s.csv' % (reportFile[:-4],
                     currentDateString)
-   # }}} 
 
     def __str__(self):
         return str(self.rowBuffer)
@@ -33,7 +28,10 @@ class Report:
     def __getitem__(self, index):
         return self.rowBuffer[index]
 
-# write {{{
+    ####################
+    #  Custom Methods  #
+    ####################
+
     def write(self, writeFileName=None):
         if not writeFileName:
             writeFileName = self.writeFile
@@ -42,32 +40,22 @@ class Report:
             for row in self.rowBuffer:
                 importWriter.writerow(row)
             writingFile.close()
-        mylogs.log.info("Wrote file '%s', %s lines" % (writeFileName,
-                len(self.rowBuffer)))
-# }}}
 
-# reset {{{
     def reset(self):
         del self.rowBuffer
         self.rowBuffer = self.fileRows
         return self
-# }}}
 
-# headers {{{
     def headers(self):
         return self.rowBuffer[0]
-# }}}
 
-# removeColumns {{{
     def removeColumns(self, *args):
         for arg in args:
             index = self.headers().index(arg)
             for row in self.rowBuffer:
                 row.pop(index)
         return self
-# }}}
 
-# filter {{{
     def filter(self, column, query=None, header=True, inverse=False):
         if column not in self.headers():
             print 'Error: invalid column header name.'
@@ -82,9 +70,7 @@ class Report:
             if self.rowBuffer[0] != self.fileRows[0]:
                 self.rowBuffer.insert(0, self.fileRows[0])
             return self
-# }}}
 
-# toDict {{{
     def toDict(self):
         dictFromColumns = {}
 
@@ -99,4 +85,3 @@ class Report:
                  column = [row[i] for row in self.rowBuffer[1:]]
             dictFromColumns[elem] = column
         return dictFromColumns
-# }}}
