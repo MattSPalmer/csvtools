@@ -1,2 +1,4 @@
+*.db
 *.dat
 confidential.py
+searches.py
