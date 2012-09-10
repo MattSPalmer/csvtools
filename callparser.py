@@ -85,15 +85,15 @@ def drawgraph(**kwargs):
     graph.append('-'*len(title))
 
     for row in axis:
-        rowstring = ''
+        rowstring = []
         padding = len(str(max(axis)))
 
-        rowstring += '{0:>{1}}| '.format(row, padding)
+        rowstring.append('{0:>{1}}| '.format(row, padding))
 
         for n in datagen(row,data):
-            rowstring += '{:<2}'.format(n)
+            rowstring.append('{:<2}'.format(n))
 
-        graph.append(rowstring)
+        graph.append(''.join(rowstring))
     for row in graph:
         print row
 
