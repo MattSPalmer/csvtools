@@ -24,24 +24,29 @@ class DeskObject(object):
 
     {
     'case': {
-            'id':'1',
-            'created_at': '',
-            'user': {
-                'id': '1',
-                'name': 'Matt'
-                    }
-            # etc...
+        'id':'1',
+        'created_at': '2012-09-01',
+        'user': {
+            'id': '1',
+            'name': 'Matt'
             }
+        # etc...
+        }
     }
 
     Upon instantiation, the DeskObject class take this data (in dictionary
-    format) and returns nested attributes like so:
+    format) and returns nicely nested attributes like so:
 
-    case.id
-    case.created_at
-    case.user.id
-    case.user.name
+    case.id == 1
+    case.created_at == '2012-09-01'
+    case.user.id == 1
+    case.user.name == 'Matt'
 
+    Extended by:
+
+    CaseSearch
+    Case
+    Interaction
     """
 
     def __init__(self, data, pref_attrs={}):
@@ -61,6 +66,9 @@ class DeskObject(object):
         return str(self.data)
 
 class CaseSearch(DeskObject):
+    """
+    TODO: CaseSearch documentation
+    """
     def __init__(self, all_pages=False, force_update=False, **params):
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
@@ -126,6 +134,9 @@ class CaseSearch(DeskObject):
         __init__(self)
 
 class Case(DeskObject):
+    """
+    TODO: Case documentation
+    """
     def __init__(self, id_num, force_update=False):
         pref_attrs = {'case_status_type': 'status'}
         case_id = str(id_num)
@@ -206,6 +217,9 @@ class Case(DeskObject):
             sys.exit()
 
 class Interaction(DeskObject):
+    """
+    TODO: Interaction documentation
+    """
     def __init__(self, data):
         pref_attrs = {
                 'interactionable': 'incoming'
