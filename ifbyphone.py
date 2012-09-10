@@ -7,7 +7,7 @@ def main():
     ##############
 
     import callparser as cp
-    import confidential as conf
+    import desklib.confidential as conf
     import csvtools
     import fetch_report
     import argparse

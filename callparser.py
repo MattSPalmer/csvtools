@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import confidential as conf
+import desklib.confidential as conf
 import datetime as dt
 import json
 
