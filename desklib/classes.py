@@ -11,6 +11,39 @@ import logging
 #############
 
 class DeskObject(object):
+    """
+    The base object class for data structures obtained through Desk's API.
+
+    Rather than have each class extend 'object', they extend DeskObject and
+    thereby inherit its useful practice of drilling down recursively through a
+    dictionary-based structure and transforming the respective keys and values
+    into a system of nested attributes, which is much cleaner to deal with when
+    coding.
+
+    For instance, we receive from Desk in JSON:
+
+    {
+    'case': {
+            'id':'1',
+            'created_at': '',
+            'user': {
+                'id': '1',
+                'name': 'Matt'
+                    }
+            # etc...
+            }
+    }
+
+    Upon instantiation, the DeskObject class take this data (in dictionary
+    format) and returns nested attributes like so:
+
+    case.id
+    case.created_at
+    case.user.id
+    case.user.name
+
+    """
+
     def __init__(self, data, pref_attrs={}):
         self.data = data
         for k, v in self.data.iteritems():
