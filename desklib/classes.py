@@ -22,25 +22,25 @@ class DeskObject(object):
 
     For instance, we receive from Desk in JSON:
 
-    {
-    'case': {
-        'id':'1',
-        'created_at': '2012-09-01',
-        'user': {
-            'id': '1',
-            'name': 'Matt'
+        {
+        'case': {
+            'id':'1',
+            'created_at': '2012-09-01',
+            'user': {
+                'id': '1',
+                'name': 'Matt'
+                }
+            # etc...
             }
-        # etc...
         }
-    }
 
     Upon instantiation, the DeskObject class take this data (in dictionary
-    format) and returns nicely nested attributes like so:
+    format) and returns nicely nested attributes thusly:
 
-    case.id == 1
-    case.created_at == '2012-09-01'
-    case.user.id == 1
-    case.user.name == 'Matt'
+        case.id == 1
+        case.created_at == '2012-09-01'
+        case.user.id == 1
+        case.user.name == 'Matt'
 
     Extended by:
 
@@ -67,7 +67,25 @@ class DeskObject(object):
 
 class CaseSearch(DeskObject):
     """
-    TODO: CaseSearch documentation
+    A data container of Case instances informed by an API call to Desk.com based
+    on parameters passed as an argument. 
+
+    Methods:
+
+    __init__: TODO
+
+    __repr__: TODO
+
+    __getitem__: TODO
+
+    __len__: TODO
+
+    __iter__: TODO
+
+    listCases: TODO
+
+    refresh: TODO
+
     """
     def __init__(self, all_pages=False, force_update=False, **params):
         res, content = fn.getFromDesk('cases', **params)
