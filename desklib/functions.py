@@ -56,22 +56,28 @@ def getFromDesk(category, **params):
         content = json.loads(content)
     return (res, content)
 
-def isMoreRecent(search):
+def updateSieve(search):
     case_file = shelve.open('cases')
-    case_items = { str(c.id): c.updated_at for c in search }
-    updated_cases = []
+    case_items = {}
+    for result in search.results:
+        case_id = str(result['case']['id'])
+        case_items[case_id] = formatDeskDate(result['case']['updated_at'])
+    case_ids = case_items.keys()
+    updated_ids = []
+    new_cases = []
     try:
-        for key in case_items.keys():
+        for key in case_ids:
             try:
-                print (case_items[key],
-                        formatDeskDate(case_file[key]['updated_at']))
                 if (case_items[key] >
                         formatDeskDate(case_file[key]['updated_at'])):
-                    updated_cases.append(int(key))
+                    updated_ids.append(key)
+                    case_ids.remove(key)
+                else:
+                    pass
             except KeyError:
-                pass
+                new_cases.append(key)
+                case_ids.remove(key)
     finally:
         case_file.close()
-    return updated_cases
-    
 
+    return (case_ids, updated_ids, new_cases)
