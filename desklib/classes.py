@@ -28,7 +28,7 @@ class DeskObject(object):
         return str(self.data)
 
 class CaseSearch(DeskObject):
-    def __init__(self, all_pages=False, **params):
+    def __init__(self, all_pages=False, force_update=False, **params):
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
         self.params = params
@@ -58,7 +58,7 @@ class CaseSearch(DeskObject):
                 self.results += newpage
         for result in self.results:
             caseId = result['case']['id']
-            self.cases[caseId] = Case(caseId)
+            self.cases[caseId] = Case(caseId, force_update=force_update)
 
     def __repr__(self):
         lines = []
@@ -79,6 +79,9 @@ class CaseSearch(DeskObject):
         index = sorted(self.cases)[index]
         return self.cases[index]
 
+    def __len__(self):
+        return len(self.cases)
+
     def __iter__(self):
         for caseId in sorted(self.cases.keys()):
             yield self.cases[caseId]
@@ -90,19 +93,24 @@ class CaseSearch(DeskObject):
         __init__(self)
 
 class Case(DeskObject):
-    def __init__(self, id_num):
+    def __init__(self, id_num, force_update=False):
         pref_attrs = {'case_status_type': 'status'}
         case_id = str(id_num)
         case_file = shelve.open('cases', writeback=True)
-
-        try:
-            data = case_file[case_id]
-        except KeyError:
-            print 'Downloading case #%s...' % case_id
+        if force_update:
+            print 'Updating case #%s...' % case_id
             res, content = fn.getFromDesk('cases/'+case_id)
             case_file[case_id] = data = content['case']
-        finally:
             case_file.close()
+        else:
+            try:
+                data = case_file[case_id]
+            except KeyError:
+                print 'Downloading case #%s...' % case_id
+                res, content = fn.getFromDesk('cases/'+case_id)
+                case_file[case_id] = data = content['case']
+            finally:
+                case_file.close()
 
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
@@ -136,18 +144,24 @@ class Case(DeskObject):
         lines.append("")
         return '\n'.join(lines).encode('utf-8')
 
-    def getInteractions(self):
+    def getInteractions(self, force_update=False):
         self.interactions = {}
         case_id = str(self.id)
         int_file = shelve.open('interactions', writeback=True)
-        try:
-            data = int_file[case_id]
-        except KeyError:
-            print 'Downloading interactions for case #%s...' % case_id
+
+        if force_update:
+            print 'Updating interactions for case #%s...' % case_id
             res, content = fn.getFromDesk('interactions', case_id=self.id)
             int_file[case_id] = data = content
-        finally:
-            int_file.close()
+        else:
+            try:
+                data = int_file[case_id]
+            except KeyError:
+                print 'Downloading interactions for case #%s...' % case_id
+                res, content = fn.getFromDesk('interactions', case_id=self.id)
+                int_file[case_id] = data = content
+            finally:
+                int_file.close()
         try:
             for result in data['results']:
                 theInteraction = result['interaction']
@@ -158,21 +172,14 @@ class Case(DeskObject):
             logging.error('Status: %s' % res['status'])
             sys.exit()
 
-    def ensureInteractions(self):
-        try:
-            self.interactions
-        except:
-            self.getInteractions()
-
 class Interaction(DeskObject):
     def __init__(self, data):
         pref_attrs = {
-                'interactionable': 'incoming',
-                'from': 'froom'
+                'interactionable': 'incoming'
                 }
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
 
     def __repr__(self):
         lines = []
-        lines.append('{0.direction:>4}: {0.created_at}'.format(self))
+        lines.append('{0.direction:>3}: {0.created_at}'.format(self))
         return '\n'.join(lines)
