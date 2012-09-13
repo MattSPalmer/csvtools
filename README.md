@@ -1,12 +1,15 @@
 # csvtools
 
-This is more an exercise than anything, since the main module probably duplicates a lot of the existing functionality of Python's CSV library.
+This is more an exercise than anything, since the main module probably
+duplicates a lot of the existing functionality of Python's CSV library.
 
 Nevertheless:
 
 csvtools provides simple analytics on csv files containing report data.
 
-The main executable is **callparser**, which parses data from CSV reports generated from IfByPhone, an online call routing service, according to several options.
+The main executable is **callparser**, which parses data from CSV reports
+generated from IfByPhone, an online call routing service, according to several
+options.
 
 **-h, --help**: display available options.
 
@@ -16,6 +19,7 @@ The main executable is **callparser**, which parses data from CSV reports genera
 
 **-m, --missed**: display missed calls by date
 
-**-w, --write**: write call details (date to the hour and whether they were answered) to a JSON file
+**-w, --write**: write call details (date to the hour and whether they were
+answered) to a JSON file
 
 **-g, --graphbyhour**: graph calls by day and by hour
