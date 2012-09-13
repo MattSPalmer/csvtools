@@ -10,6 +10,7 @@ import api
 import time
 import json
 import logging
+import shelve
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -54,3 +55,16 @@ def getFromDesk(category, **params):
         res, content = api.client.request(request_url, "GET")
         content = json.loads(content)
     return (res, content)
+
+def updateSieve(search):
+    cache_file = shelve.open('cases')
+    cache = set([ (x[0], x[1]['updated_at']) for x in cache_file.items() ])
+    desk = set([ (str(x.values()[0]['id']), x.values()[0]['updated_at'])
+                for x in search.results ])
+
+    new =     set([n[0] for n in desk]) - set(n[0] for n in cache)
+    novel =   desk - cache
+    updated = set([n[0] for n in novel]) - new
+    old =     set(n[0] for n in cache) - updated
+
+    return map(list, (new, updated, old))
