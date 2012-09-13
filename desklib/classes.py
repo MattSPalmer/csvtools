@@ -6,6 +6,8 @@ import shelve
 import sys
 import logging
 
+logging.basicConfig(level=logging.ERROR)
+
 #############
 #  Classes  #
 #############
@@ -37,19 +39,19 @@ class CaseSearch(DeskObject):
         except:
             logging.error('Status: %s' % res['status'])
         
-        stored, updated, new = fn.updateSieve(self)        
-        self.cases = {}
+        new, updated, old = fn.updateSieve(self)        
+        self.cases = self.new = self.updated = self.old = {}
 
         for result in self.results:
             case_id = result['case']['id']
-            if str(case_id) in stored:
-                self.cases[case_id] = Case(case_id=case_id)
+            if str(case_id) in old:
+                self.cases[case_id] = self.old[case_id] = Case(case_id=case_id)
             elif str(case_id) in updated:
-                self.cases[case_id] = Case(case_id=case_id, force_update=True)
+                self.cases[case_id] = self.updated[case_id] = Case(
+                        case_id=case_id, force_update=True)
             elif str(case_id) in new:
-                self.cases[case_id] = Case(data=result['case'])
-            else:
-                logging.error('I think they are not strings, these JSON things')
+                self.cases[case_id] = self.new[case_id] = Case(
+                        data=result['case'])
 
     def __repr__(self):
         lines = []
@@ -110,21 +112,25 @@ class Case(DeskObject):
                 case_file.close()
         else:
             try:
+                # Try to grab case data from cache.
                 data = case_file[case_id]
+            except TypeError:
+                # Data provided but ID not included. Store case using data from
+                # case search.
+                logging.debug("We have data for this case and we don't have "
+                        "the case yet so let's use the data")
             except KeyError:
+                # ID but no data passed. Data not in cache. Download from Desk.
                 logging.debug('Downloading case #%s...' % case_id)
                 res, content = fn.getFromDesk('cases/'+case_id)
                 case_file[case_id] = data = content['case']
-            except TypeError:
-                logging.debug("We have data for this case and we don't have "
-                        "the case yet so let's use the data")
             finally:
                 case_file.close()
 
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
     def __getitem__(self, index):
-        self.ensureInteractions()
+        self.getInteractions()
         index = sorted(self.interactions)[index]
         return self.interactions[index]
 
@@ -132,7 +138,7 @@ class Case(DeskObject):
        return self.output()
 
     def __iter__(self):
-        self.ensureInteractions()
+        self.getInteractions()
         for int_id, interaction in sorted(self.interactions.iteritems()):
             yield interaction
 
@@ -146,7 +152,10 @@ class Case(DeskObject):
         lines.append(u"Subject: {0.subject}".format(self))
         lines.append(u"Created at: {0.created_at}".format(self))
         lines.append(u"Updated at: {0.updated_at}".format(self))
-        lines.append(u"Assigned to: {0.user.name}".format(self))
+        try:
+            lines.append(u"Assigned to: {0.user.name}".format(self))
+        except AttributeError:
+            lines.append(u"Unassigned")
         lines.append(u"Status: {0.status}".format(self))
         if self.status in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))

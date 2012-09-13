@@ -5,7 +5,9 @@ import desklib.classes   as cl
 import desklib.searches  as s
 
 def main():
-    search = cl.CaseSearch(**s.searches['assigned'])
+    search = cl.CaseSearch(**s.searches['unassigned'])
+    print len(search)
+
 
 if __name__ == '__main__':
     main()

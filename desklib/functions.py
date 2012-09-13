@@ -57,27 +57,14 @@ def getFromDesk(category, **params):
     return (res, content)
 
 def updateSieve(search):
-    case_file = shelve.open('cases')
-    case_items = {}
-    for result in search.results:
-        case_id = str(result['case']['id'])
-        case_items[case_id] = formatDeskDate(result['case']['updated_at'])
-    case_ids = case_items.keys()
-    updated_ids = []
-    new_cases = []
-    try:
-        for key in case_ids:
-            try:
-                if (case_items[key] >
-                        formatDeskDate(case_file[key]['updated_at'])):
-                    updated_ids.append(key)
-                    case_ids.remove(key)
-                else:
-                    pass
-            except KeyError:
-                new_cases.append(key)
-                case_ids.remove(key)
-    finally:
-        case_file.close()
+    cache_file = shelve.open('cases')
+    cache = set([ (x[0], x[1]['updated_at']) for x in cache_file.items() ])
+    desk = set([ (str(x.values()[0]['id']), x.values()[0]['updated_at'])
+                for x in search.results ])
 
-    return (case_ids, updated_ids, new_cases)
+    new =     set([n[0] for n in desk]) - set(n[0] for n in cache)
+    novel =   desk - cache
+    updated = set([n[0] for n in novel]) - new
+    old =     set(n[0] for n in cache) - updated
+
+    return map(list, (new, updated, old))
