@@ -6,6 +6,8 @@ import shelve
 import sys
 import logging
 
+logging.basicConfig(level=logging.ERROR)
+
 #############
 #  Classes  #
 #############
@@ -32,33 +34,24 @@ class CaseSearch(DeskObject):
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
         self.params = params
-        self.pref_attrs = {
-                'currentPage': 'page',
-                }
         try:
-            super(CaseSearch, self).__init__(self.data, pref_attrs=self.pref_attrs)
+            super(CaseSearch, self).__init__(self.data)
         except:
             logging.error('Status: %s' % res['status'])
-        self.pages = divmod(self.total, self.count)[0] + 1
-        self.cases = {}
-        if all_pages:
-            if self.total > 300:
-                choice = raw_input(
-                        'There are {0} cases to download. '
-                        'Are you sure? (y/n) '.format(self.total))
-                if choice not in ('y', 'ye', 'yes', 'yea', 'yeah'):
-                    print "That's probably the responsible choice. Exiting..."
-                    sys.exit()
-            for pagenum in range(1, self.pages):
-                progress = int(100 * pagenum / float(self.pages))
-                sys.stdout.write("Download progress: %d%%   \r" % (progress) )
-                sys.stdout.flush()
-                newpage = fn.getFromDesk('cases',
-                        page=pagenum, **params)['results']
-                self.results += newpage
+        
+        new, updated, old = fn.updateSieve(self)        
+        self.cases = self.new = self.updated = self.old = {}
+
         for result in self.results:
-            caseId = result['case']['id']
-            self.cases[caseId] = Case(caseId)
+            case_id = result['case']['id']
+            if str(case_id) in old:
+                self.cases[case_id] = self.old[case_id] = Case(case_id=case_id)
+            elif str(case_id) in updated:
+                self.cases[case_id] = self.updated[case_id] = Case(
+                        case_id=case_id, force_update=True)
+            elif str(case_id) in new:
+                self.cases[case_id] = self.new[case_id] = Case(
+                        data=result['case'])
 
     def __repr__(self):
         lines = []
@@ -79,6 +72,9 @@ class CaseSearch(DeskObject):
         index = sorted(self.cases)[index]
         return self.cases[index]
 
+    def __len__(self):
+        return len(self.cases)
+
     def __iter__(self):
         for caseId in sorted(self.cases.keys()):
             yield self.cases[caseId]
@@ -90,24 +86,51 @@ class CaseSearch(DeskObject):
         __init__(self)
 
 class Case(DeskObject):
-    def __init__(self, id_num):
+    def __init__(self, case_id=None, data=None, force_update=False):
+        if (not (case_id or data)):
+            logging.error('When instantiating a Case you must specify either '
+                    'the case data or case ID.')
+            sys.exit()
         pref_attrs = {'case_status_type': 'status'}
-        case_id = str(id_num)
         case_file = shelve.open('cases', writeback=True)
 
         try:
-            data = case_file[case_id]
-        except KeyError:
-            print 'Downloading case #%s...' % case_id
-            res, content = fn.getFromDesk('cases/'+case_id)
-            case_file[case_id] = data = content['case']
-        finally:
-            case_file.close()
+            case_id = str(int(case_id))
+        except:
+            pass
+
+        if force_update:
+            try:
+                logging.debug('Updating case #%s...' % case_id)
+                res, content = fn.getFromDesk('cases/'+case_id)
+                case_file[case_id] = data = content['case']
+            except NameError:
+                logging.error('When specifying force_update in a case '
+                        'instantiation, make sure to specify id_num too.')
+                sys.exit()
+            finally:
+                case_file.close()
+        else:
+            try:
+                # Try to grab case data from cache.
+                data = case_file[case_id]
+            except TypeError:
+                # Data provided but ID not included. Store case using data from
+                # case search.
+                logging.debug("We have data for this case and we don't have "
+                        "the case yet so let's use the data")
+            except KeyError:
+                # ID but no data passed. Data not in cache. Download from Desk.
+                logging.debug('Downloading case #%s...' % case_id)
+                res, content = fn.getFromDesk('cases/'+case_id)
+                case_file[case_id] = data = content['case']
+            finally:
+                case_file.close()
 
         super(Case, self).__init__(data, pref_attrs=pref_attrs)
 
     def __getitem__(self, index):
-        self.ensureInteractions()
+        self.getInteractions()
         index = sorted(self.interactions)[index]
         return self.interactions[index]
 
@@ -115,7 +138,7 @@ class Case(DeskObject):
        return self.output()
 
     def __iter__(self):
-        self.ensureInteractions()
+        self.getInteractions()
         for int_id, interaction in sorted(self.interactions.iteritems()):
             yield interaction
 
@@ -124,30 +147,39 @@ class Case(DeskObject):
 
     def output(self):
         lines = []
-        print self.subject
         lines.append(u"Case ID: {0.id}".format(self))
         lines.append(u"-"*len(lines[0]))
         lines.append(u"Subject: {0.subject}".format(self))
         lines.append(u"Created at: {0.created_at}".format(self))
-        lines.append(u"Assigned to: {0.user.name}".format(self))
+        lines.append(u"Updated at: {0.updated_at}".format(self))
+        try:
+            lines.append(u"Assigned to: {0.user.name}".format(self))
+        except AttributeError:
+            lines.append(u"Unassigned")
         lines.append(u"Status: {0.status}".format(self))
         if self.status in ['resolved', 'closed']:
             lines.append(u"Resolved at {0.resolved_at}".format(self))
         lines.append("")
         return '\n'.join(lines).encode('utf-8')
 
-    def getInteractions(self):
+    def getInteractions(self, force_update=False):
         self.interactions = {}
         case_id = str(self.id)
         int_file = shelve.open('interactions', writeback=True)
-        try:
-            data = int_file[case_id]
-        except KeyError:
-            print 'Downloading interactions for case #%s...' % case_id
+
+        if force_update:
+            logging.debug('Updating interactions for case #%s...' % case_id)
             res, content = fn.getFromDesk('interactions', case_id=self.id)
             int_file[case_id] = data = content
-        finally:
-            int_file.close()
+        else:
+            try:
+                data = int_file[case_id]
+            except KeyError:
+                logging.debug('Downloading interactions for case #%s...' % case_id)
+                res, content = fn.getFromDesk('interactions', case_id=self.id)
+                int_file[case_id] = data = content
+            finally:
+                int_file.close()
         try:
             for result in data['results']:
                 theInteraction = result['interaction']
@@ -158,21 +190,14 @@ class Case(DeskObject):
             logging.error('Status: %s' % res['status'])
             sys.exit()
 
-    def ensureInteractions(self):
-        try:
-            self.interactions
-        except:
-            self.getInteractions()
-
 class Interaction(DeskObject):
     def __init__(self, data):
         pref_attrs = {
-                'interactionable': 'incoming',
-                'from': 'froom'
+                'interactionable': 'incoming'
                 }
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
 
     def __repr__(self):
         lines = []
-        lines.append('{0.direction:>4}: {0.created_at}'.format(self))
+        lines.append('{0.direction:>3}: {0.created_at}'.format(self))
         return '\n'.join(lines)
