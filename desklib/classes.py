@@ -149,24 +149,30 @@ class Case(DeskObject):
     TODO: Case documentation
     """
     def __init__(self, case_id=None, data=None, force_update=False):
-        if (not (case_id or data)):
+        # Only accept values for one of either case_id or data, not both or none
+        if not (case_id or data):
             logging.error('When instantiating a Case you must specify either '
-                    'the case data or case ID.')
+                    'the case data or case ID, not neither/both.')
             sys.exit()
         pref_attrs = {'case_status_type': 'status'}
         case_file = shelve.open('cases', writeback=True)
 
         try:
+            # If possible, convert case id to string. 'int' is used to avoid
+            # converting None to a string, which is bad.
             case_id = str(int(case_id))
         except:
+            # But no big deal if you can't, we'll catch the error elsewhere.
             pass
 
         if force_update:
             try:
+                # Re-download the case from Desk using the case id.
                 logging.debug('Updating case #%s...' % case_id)
                 res, content = fn.getFromDesk('cases/'+case_id)
                 case_file[case_id] = data = content['case']
             except NameError:
+                # Catch errors due to no case id specified.
                 logging.error('When specifying force_update in a case '
                         'instantiation, make sure to specify id_num too.')
                 sys.exit()
