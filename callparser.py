@@ -9,6 +9,7 @@ from calendar    import month_name, day_name, weekday
 agent_keys = conf.agent_keys
 sales      = conf.sales
 today = dt.datetime.today()
+yesterday = today + dt.timedelta(days=-1)
 
 #############
 #  Classes  #
@@ -38,7 +39,7 @@ def timeRange(start_dt=None, end_dt=today, delta=None):
 
 arg_hash = {
         'today': timeRange(delta=0),
-        'yesterday': timeRange(delta=-1),
+        'yesterday': timeRange(start_dt=yesterday, end_dt=yesterday),
         'week': timeRange(delta=-7),
         'month': timeRange(delta=-30)
         }
