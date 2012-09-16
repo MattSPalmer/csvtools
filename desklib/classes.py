@@ -69,7 +69,7 @@ class DeskObject(object):
 
 class CaseSearch(DeskObject):
     """
-    A data container of Case instances informed by an API call to Desk.com based
+    A data container of Case instances populated by an API call to Desk.com based
     on parameters passed as an argument. 
 
     Methods:
@@ -152,7 +152,7 @@ class Case(DeskObject):
     TODO: Case documentation
     """
     def __init__(self, case_id=None, data=None, force_update=False):
-        # Only accept values for one of either case_id or data, not both or none
+        # Only accept values for one of either case_id or data, not neither/both
         if not (case_id or data):
             logging.error('When instantiating a Case you must specify either '
                     'the case data or case ID, not neither/both.')
