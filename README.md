@@ -23,3 +23,9 @@ options.
 answered) to a JSON file
 
 **-g, --graphbyhour**: graph calls by day and by hour
+
+# desk API
+
+This repo also contains tools which allow for the retrieval of data from Desk.com
+
+*This is a work in progress.*
