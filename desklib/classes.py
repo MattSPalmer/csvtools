@@ -149,7 +149,8 @@ class CaseSearch(DeskObject):
 
 class Case(DeskObject):
     """
-    TODO: Case documentation
+    Instances of the Case class contain and mete out data pertaining to specific
+    Desk cases.
     """
     def __init__(self, case_id=None, data=None, force_update=False):
         # Only accept values for one of either case_id or data, not neither/both
