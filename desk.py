@@ -8,6 +8,8 @@ s  = desklib.searches
 
 def main():
     search = cl.CaseSearch(**s.searches['unassigned'])
+    for case in search:
+        print case
 
 
 if __name__ == '__main__':
