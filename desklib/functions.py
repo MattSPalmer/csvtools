@@ -16,6 +16,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 today = dt.datetime.today()
 
+# Date functions
+
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
 
@@ -41,6 +43,7 @@ def formatDeskDate(date):
     split_date = date.split('-')
     adj_date = '-'.join(split_date[:-1])
     return dt.datetime.strptime(adj_date, date_format)
+
 
 def getFromDesk(category, **params):
     base_url = 'http://shopkeep.desk.com/api/v1/'

@@ -13,6 +13,44 @@ logging.disable(logging.DEBUG)
 #############
 
 class DeskObject(object):
+    """
+    The base object class for data structures obtained through Desk's API.
+
+    Rather than have each class extend 'object', they extend DeskObject and
+    thereby inherit its useful practice of drilling down recursively through a
+    dictionary-based structure and transforming the respective keys and values
+    into a system of nested attributes, which is much cleaner to deal with when
+    coding.
+
+    For instance, we receive from Desk in JSON:
+
+        {
+        'case': {
+            'id':'1',
+            'created_at': '2012-09-01',
+            'user': {
+                'id': '1',
+                'name': 'Matt'
+                }
+            # etc...
+            }
+        }
+
+    Upon instantiation, the DeskObject class take this data (in dictionary
+    format) and returns nicely nested attributes thusly:
+
+        case.id == 1
+        case.created_at == '2012-09-01'
+        case.user.id == 1
+        case.user.name == 'Matt'
+
+    Extended by:
+
+    CaseSearch
+    Case
+    Interaction
+    """
+
     def __init__(self, data, pref_attrs={}):
         self.data = data
         for k, v in self.data.iteritems():
@@ -30,6 +68,27 @@ class DeskObject(object):
         return str(self.data)
 
 class CaseSearch(DeskObject):
+    """
+    A data container of Case instances populated by an API call to Desk.com based
+    on parameters passed as an argument. 
+
+    Methods:
+
+    __init__: TODO
+
+    __repr__: TODO
+
+    __getitem__: TODO
+
+    __len__: TODO
+
+    __iter__: TODO
+
+    listCases: TODO
+
+    refresh: TODO
+
+    """
     def __init__(self, force_update=False, **params):
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
@@ -89,25 +148,35 @@ class CaseSearch(DeskObject):
         __init__(self)
 
 class Case(DeskObject):
+    """
+    Instances of the Case class contain and mete out data pertaining to specific
+    Desk cases.
+    """
     def __init__(self, case_id=None, data=None, force_update=False):
+        # Only accept values for one of either case_id or data, not neither/both
         if not (case_id or data):
             logging.error('When instantiating a Case you must specify either '
-                    'the case data or case ID.')
+                    'the case data or case ID, not neither/both.')
             sys.exit()
         pref_attrs = {'case_status_type': 'status'}
         case_file = shelve.open('cases', writeback=True)
 
         try:
+            # If possible, convert case id to string. 'int' is used to avoid
+            # converting None to a string, which is bad.
             case_id = str(int(case_id))
         except:
+            # But no big deal if you can't, we'll catch the error elsewhere.
             pass
 
         if force_update:
             try:
+                # Re-download the case from Desk using the case id.
                 logging.debug('Updating case #%s...' % case_id)
                 res, content = fn.getFromDesk('cases/'+case_id)
                 case_file[case_id] = data = content['case']
             except NameError:
+                # Catch errors due to no case id specified.
                 logging.error('When specifying force_update in a case '
                         'instantiation, make sure to specify id_num too.')
                 sys.exit()
@@ -194,6 +263,9 @@ class Case(DeskObject):
             sys.exit()
 
 class Interaction(DeskObject):
+    """
+    TODO: Interaction documentation
+    """
     def __init__(self, data):
         pref_attrs = {
                 'interactionable': 'incoming'
