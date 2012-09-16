@@ -6,7 +6,8 @@ import shelve
 import sys
 import logging
 
-logging.disable(logging.DEBUG)
+# Logging
+module_logger = logging.getLogger('desk.classes')
 
 #############
 #  Classes  #
@@ -31,6 +32,9 @@ class DeskObject(object):
 
 class CaseSearch(DeskObject):
     def __init__(self, force_update=False, **params):
+        self.logger = logging.getLogger('desk.classes.CaseSearch')
+        self.logger.debug('creating an instance of CaseSearch')
+
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
         self.params = params
@@ -90,6 +94,9 @@ class CaseSearch(DeskObject):
 
 class Case(DeskObject):
     def __init__(self, case_id=None, data=None, force_update=False):
+        self.logger = logging.getLogger('desk.classes.Case')
+        self.logger.debug('creating an instance of Case')
+
         if (not (case_id or data)):
             logging.error('When instantiating a Case you must specify either '
                     'the case data or case ID.')
@@ -195,6 +202,9 @@ class Case(DeskObject):
 
 class Interaction(DeskObject):
     def __init__(self, data):
+        self.logger = logging.getLogger('desk.classes.Case')
+        self.logger.debug('creating an instance of Case')
+
         pref_attrs = {
                 'interactionable': 'incoming'
                 }
