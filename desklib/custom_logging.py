@@ -23,7 +23,7 @@ ch.setLevel(logging.ERROR)
 
 # create formatter and add it to the handlers
 formatter = logging.Formatter(
-        '%(levelname)s:%(asctime)s: %(name)s: %(message)s\n'
+        '%(levelname)-8s %(asctime)-15s %(name)-20s %(message)s\n'
         )
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
@@ -31,3 +31,5 @@ ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh)
 logger.addHandler(ch)
+
+print dir(logger)
