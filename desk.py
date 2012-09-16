@@ -1,13 +1,15 @@
 #!usr/bin/env python
 
-import desklib.functions as fn
-import desklib.classes   as cl
-import desklib.searches  as s
+import desklib
+
+fn = desklib.functions
+cl = desklib.classes
+s  = desklib.searches
 
 def main():
-    res, content = fn.getFromDesk('cases', s.searches['assigned'])
-    for k, v in content.iteritems():
-        pass
+    search = cl.CaseSearch(**s.searches['unassigned'])
+    for case in search:
+        print case
 
 
 if __name__ == '__main__':

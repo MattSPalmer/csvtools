@@ -6,7 +6,8 @@ import shelve
 import sys
 import logging
 
-logging.disable(logging.DEBUG)
+# Logging
+module_logger = logging.getLogger('desk.classes')
 
 #############
 #  Classes  #
@@ -90,13 +91,16 @@ class CaseSearch(DeskObject):
 
     """
     def __init__(self, force_update=False, **params):
+        self.logger = logging.getLogger('desk.classes.CaseSearch')
+        self.logger.debug('creating an instance of CaseSearch')
+
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
         self.params = params
         try:
             super(CaseSearch, self).__init__(self.data)
         except:
-            logging.error('Status: %s' % res['status'])
+            self.logger.error('Status: %s' % res['status'])
         
         new, updated, old = fn.updateSieve(self)        
         self.cases = self.new = self.updated = self.old = {}
@@ -104,14 +108,18 @@ class CaseSearch(DeskObject):
         for result in self.results:
             case_id = result['case']['id']
             if force_update:
+                self.logger.debug('Update forced on %s' % case_id)
                 self.cases[case_id] = self.updated[case_id] = Case(
                         case_id=case_id, force_update=True)
             elif str(case_id) in old:
+                self.logger.debug('No update needed for %s' % case_id)
                 self.cases[case_id] = self.old[case_id] = Case(case_id=case_id)
             elif str(case_id) in updated:
+                self.logger.debug('Update needed for %s' % case_id)
                 self.cases[case_id] = self.updated[case_id] = Case(
                         case_id=case_id, force_update=True)
             elif str(case_id) in new:
+                self.logger.debug('Data needed for new case %s' % case_id)
                 self.cases[case_id] = self.new[case_id] = Case(
                         data=result['case'])
 
@@ -154,9 +162,12 @@ class Case(DeskObject):
     """
     def __init__(self, case_id=None, data=None, force_update=False):
         # Only accept values for one of either case_id or data, not neither/both
-        if not (case_id or data):
-            logging.error('When instantiating a Case you must specify either '
-                    'the case data or case ID, not neither/both.')
+        self.logger = logging.getLogger('desk.classes.Case')
+        self.logger.debug('creating an instance of Case')
+
+        if (not (case_id or data)):
+            self.logger.error('When instantiating a Case you must specify '
+                    'either the case data or case ID.')
             sys.exit()
         pref_attrs = {'case_status_type': 'status'}
         case_file = shelve.open('cases', writeback=True)
@@ -172,12 +183,12 @@ class Case(DeskObject):
         if force_update:
             try:
                 # Re-download the case from Desk using the case id.
-                logging.debug('Updating case #%s...' % case_id)
+                self.logger.debug('Updating case #%s...' % case_id)
                 res, content = fn.getFromDesk('cases/'+case_id)
                 case_file[case_id] = data = content['case']
             except NameError:
                 # Catch errors due to no case id specified.
-                logging.error('When specifying force_update in a case '
+                self.logger.error('When specifying force_update in a case '
                         'instantiation, make sure to specify id_num too.')
                 sys.exit()
             finally:
@@ -189,11 +200,11 @@ class Case(DeskObject):
             except TypeError:
                 # Data provided but ID not included. Store case using data from
                 # case search.
-                logging.debug("We have data for this case and we don't have "
-                        "the case yet so let's use the data")
+                self.logger.debug("We have data for this case and we don't "
+                        "have the case yet so let's use the data")
             except KeyError:
                 # ID but no data passed. Data not in cache. Download from Desk.
-                logging.debug('Downloading case #%s...' % case_id)
+                self.logger.debug('Downloading case #%s...' % case_id)
                 res, content = fn.getFromDesk('cases/'+case_id)
                 case_file[case_id] = data = content['case']
             finally:
@@ -240,14 +251,15 @@ class Case(DeskObject):
         int_file = shelve.open('interactions', writeback=True)
 
         if force_update:
-            logging.debug('Updating interactions for case #%s...' % case_id)
+            self.logger.debug('Updating interactions for case #%s...' % case_id)
             res, content = fn.getFromDesk('interactions', case_id=self.id)
             int_file[case_id] = data = content
         else:
             try:
                 data = int_file[case_id]
             except KeyError:
-                logging.debug('Downloading interactions for case #%s...' % case_id)
+                self.logger.debug('Downloading interactions for case #%s...'
+                        % case_id)
                 res, content = fn.getFromDesk('interactions', case_id=self.id)
                 int_file[case_id] = data = content
             finally:
@@ -259,7 +271,7 @@ class Case(DeskObject):
                 self.interactions[interaction_id] = Interaction(theInteraction)
             return self.interactions
         except:
-            logging.error('Status: %s' % res['status'])
+            self.logger.error('Status: %s' % res['status'])
             sys.exit()
 
 class Interaction(DeskObject):
@@ -267,6 +279,9 @@ class Interaction(DeskObject):
     TODO: Interaction documentation
     """
     def __init__(self, data):
+        self.logger = logging.getLogger('desk.classes.Case')
+        self.logger.debug('creating an instance of Case')
+
         pref_attrs = {
                 'interactionable': 'incoming'
                 }

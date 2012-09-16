@@ -9,10 +9,7 @@ import urllib as ul
 import api
 import time
 import json
-import logging
 import shelve
-
-logging.basicConfig(level=logging.DEBUG)
 
 today = dt.datetime.today()
 
