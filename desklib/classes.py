@@ -90,7 +90,7 @@ class CaseSearch(DeskObject):
 
 class Case(DeskObject):
     def __init__(self, case_id=None, data=None, force_update=False):
-        if (not (case_id or data)):
+        if not (case_id or data):
             logging.error('When instantiating a Case you must specify either '
                     'the case data or case ID.')
             sys.exit()
