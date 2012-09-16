@@ -6,7 +6,7 @@ import shelve
 import sys
 import logging
 
-logging.basicConfig(level=logging.ERROR)
+logging.disable(logging.DEBUG)
 
 #############
 #  Classes  #
@@ -89,7 +89,7 @@ class CaseSearch(DeskObject):
     refresh: TODO
 
     """
-    def __init__(self, all_pages=False, **params):
+    def __init__(self, force_update=False, **params):
         res, content = fn.getFromDesk('cases', **params)
         self.data = content
         self.params = params
@@ -103,7 +103,10 @@ class CaseSearch(DeskObject):
 
         for result in self.results:
             case_id = result['case']['id']
-            if str(case_id) in old:
+            if force_update:
+                self.cases[case_id] = self.updated[case_id] = Case(
+                        case_id=case_id, force_update=True)
+            elif str(case_id) in old:
                 self.cases[case_id] = self.old[case_id] = Case(case_id=case_id)
             elif str(case_id) in updated:
                 self.cases[case_id] = self.updated[case_id] = Case(
