@@ -7,7 +7,12 @@ cl = desklib.classes
 s  = desklib.searches
 
 def main():
-    search = cl.CaseSearch(**s.searches['unassigned'])
+    params = {
+            'status': 'new,open,pending',
+            'assigned_user': 'Patrick'
+            }
+    search = cl.CaseSearch(**params)
+    print search
     for case in search:
         print case
 
