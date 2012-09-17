@@ -15,7 +15,8 @@ module_logger = logging.getLogger('desk.classes')
 
 class DeskObject(object):
     """
-    The base object class for data structures obtained through Desk's API.
+    The very simple base object class for data structures obtained through
+    Desk's API.
 
     Rather than have each class extend 'object', they extend DeskObject and
     thereby inherit its useful practice of drilling down recursively through a
@@ -70,8 +71,8 @@ class DeskObject(object):
 
 class CaseSearch(DeskObject):
     """
-    A data container of Case instances populated by an API call to Desk.com based
-    on parameters passed as an argument. 
+    A data container of Case instances populated by an API call to Desk.com
+    based on parameters passed as an argument. 
 
     Methods:
 

@@ -68,3 +68,10 @@ def updateSieve(search):
     old =     set(n[0] for n in cache) - updated
 
     return map(list, (new, updated, old))
+
+def updateEvents(k, v):
+    events_file = shelve.open('events', writeback=True)
+    try:
+        events_file[k] = v
+    finally:
+        events_file.close()
