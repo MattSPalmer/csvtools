@@ -71,8 +71,7 @@ class CaseSearch(DeskObject):
         lines.append('{:<45}'.format('-'*45))
         for k, v in sorted(self.params.iteritems()):
             lines.append("{0:<22}:{1:>22}".format(k, v))
-        lines.append('\n{0} cases over {2} pages, {1} cases per page.'
-                .format(self.total, self.count, self.pages))
+        lines.append('\n{0} cases.'.format(self.total))
         return '\n'.join(lines)
 
     def __getitem__(self, index):
