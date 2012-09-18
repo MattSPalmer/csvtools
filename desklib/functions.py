@@ -9,6 +9,7 @@ import urllib as ul
 import api
 import time
 import json
+import sh
 import shelve
 
 today = dt.datetime.today()
@@ -73,5 +74,21 @@ def updateEvents(k, v):
     events_file = shelve.open('events', writeback=True)
     try:
         events_file[k] = v
+    except:
+        print "Hey."
     finally:
         events_file.close()
+    return v
+
+def getEvent(k):
+    events_file = shelve.open('events', writeback=True)
+    try:
+        v = events_file.get(k, None)
+    except:
+        print "Hey."
+    finally:
+        events_file.close()
+    return v
+
+def serenaSay(msg, **params):
+    sh.say(msg.format(**params))

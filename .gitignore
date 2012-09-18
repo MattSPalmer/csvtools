@@ -2,4 +2,4 @@
 *.dat
 */logs/*
 confidential.py
-searches.py
+presets.py
