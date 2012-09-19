@@ -1,5 +1,5 @@
 *.db
 *.dat
-*/logs/*
+logs/*
 confidential.py
 presets.py
