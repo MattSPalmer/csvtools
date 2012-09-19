@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 
 import functions as fn
 import datetime as dt

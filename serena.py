@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 
 import desklib
 import datetime as dt

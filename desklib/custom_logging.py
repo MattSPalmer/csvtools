@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 
 import logging
 from logging.handlers import RotatingFileHandler
