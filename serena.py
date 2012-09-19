@@ -37,7 +37,7 @@ def updatedCases():
                 name=k, num=v, noun=n)
 
 def main():
-    sh.afplay('~/bin/csvtools/media/captain_planet.mp3')
+    sh.afplay('/Users/provisions/bin/csvtools/media/captain_planet.mp3')
     while True:
         newCases()
         updatedCases()
