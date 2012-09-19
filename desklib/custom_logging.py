@@ -1,6 +1,7 @@
 #!usr/bin/env python
 
 import logging
+from logging.handlers import RotatingFileHandler
 from os import path
 from os import makedirs
 
@@ -14,7 +15,7 @@ log_path = 'logs/desk.log'
 log_dir, log_file = path.split(log_path)
 if not path.exists(log_dir):
     makedirs(log_dir)
-fh = logging.FileHandler(log_path)
+fh = RotatingFileHandler(log_path, maxBytes=20000, backupCount=5)
 fh.setLevel(logging.DEBUG)
 
 # create console handler with a higher log level
