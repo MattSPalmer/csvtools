@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 import desklib.confidential as conf
 import datetime as dt
