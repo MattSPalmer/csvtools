@@ -3,6 +3,7 @@
 import desklib
 import datetime as dt
 import logging
+import sh
 import time
 from collections import Counter
 
@@ -36,6 +37,7 @@ def updatedCases():
                 name=k, num=v, noun=n)
 
 def main():
+    sh.afplay('media/captain_planet.mp3')
     while True:
         newCases()
         updatedCases()
