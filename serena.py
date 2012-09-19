@@ -16,22 +16,21 @@ def newCases():
     srn_logger.debug('\nGetting new cases.\n')
     last = fn.getEvent('last_updated_new')
     search = cl.CaseSearch(**pre.searches['new'])
-    statuses = Counter( [c for c in search if c.user and c.interaction_in_at > last])
+    new = len([c for c in search if c.interaction_in_at > last])
     fn.updateEvents('last_updated_new', dt.datetime.now())
-    for k, v in statuses.iteritems():
-        n = 'case' if v == 1 else 'cases'
-        fn.serenaSay(pre.phrases['new'],
-                name=k, num=v, noun=n)
+    if new > 0:
+        n = 'case' if new == 1 else 'cases'
+        fn.serenaSay(pre.phrases['new'], num=new, noun=n)
 
 def updatedCases():
     srn_logger.debug('\nGetting updated cases.\n')
     last = fn.getEvent('last_updated')
     search = cl.CaseSearch(**pre.searches['followup'])
-    statuses = Counter(
+    updated = Counter(
             [c.user.name.split(' ')[0]
                 for c in search if c.user and c.interaction_in_at > last])
     fn.updateEvents('last_updated', dt.datetime.now())
-    for k, v in statuses.iteritems():
+    for k, v in updated.iteritems():
         n = 'case' if v == 1 else 'cases'
         fn.serenaSay(pre.phrases['updated'],
                 name=k, num=v, noun=n)
