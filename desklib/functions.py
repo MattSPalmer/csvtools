@@ -9,11 +9,12 @@ import urllib as ul
 import api
 import time
 import json
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
+import sh
+import shelve
 
 today = dt.datetime.today()
+
+# Date functions
 
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
@@ -41,6 +42,7 @@ def formatDeskDate(date):
     adj_date = '-'.join(split_date[:-1])
     return dt.datetime.strptime(adj_date, date_format)
 
+
 def getFromDesk(category, **params):
     base_url = 'http://shopkeep.desk.com/api/v1/'
     output_format = 'json'
@@ -54,3 +56,39 @@ def getFromDesk(category, **params):
         res, content = api.client.request(request_url, "GET")
         content = json.loads(content)
     return (res, content)
+
+def updateSieve(search):
+    cache_file = shelve.open('cases')
+    cache = set([ (x[0], x[1]['updated_at']) for x in cache_file.items() ])
+    desk = set([ (str(x.values()[0]['id']), x.values()[0]['updated_at'])
+                for x in search.results ])
+
+    new =     set([n[0] for n in desk]) - set(n[0] for n in cache)
+    novel =   desk - cache
+    updated = set([n[0] for n in novel]) - new
+    old =     set(n[0] for n in cache) - updated
+
+    return map(list, (new, updated, old))
+
+def updateEvents(k, v):
+    events_file = shelve.open('events', writeback=True)
+    try:
+        events_file[k] = v
+    except:
+        print "Hey."
+    finally:
+        events_file.close()
+    return v
+
+def getEvent(k):
+    events_file = shelve.open('events', writeback=True)
+    try:
+        v = events_file.get(k, None)
+    except:
+        print "Hey."
+    finally:
+        events_file.close()
+    return v
+
+def serenaSay(msg, **params):
+    sh.say(msg.format(**params))
