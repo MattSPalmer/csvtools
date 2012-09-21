@@ -1,24 +1,47 @@
-import shiftplanning.shift_planning as sp
+import shiftplanning as sp
+import datetime as dt
 from desklib.confidential import sp_creds
-from desklib.classes import DeskObject
+
+class AttributeRich(object):
+    def __init__(self, data, pref_attrs={}):
+        self.data = data
+        pref_attrs = {
+                "start_timestamp": "start",
+                "end_timestamp": "end"
+                }
+        for k, v in self.data.iteritems():
+            k = pref_attrs.get(k, k)
+            try:
+                v = dt.datetime.strptime(v, '%Y-%m-%d %H:%M:%S')
+            except:
+                pass
+            try:
+                v = map(AttributeRich, v)
+            except:
+                pass
+            try:
+                setattr(self, k, AttributeRich(v))
+            except:
+                setattr(self, k, v)
+
+    def __repr__(self):
+        return str(self.data)
+
+connection = sp.ShiftPlanning(sp_creds['key'],
+sp_creds['username'], sp_creds['password'])
+
+connection.do_login()
+
+def whoIsOnNow():
+    now = dt.datetime.now()
+    connection.get_shifts(now, now, mode='overview')
+    shifts = map(AttributeRich, connection.get_public_data())
+    employees = []
+    for shift in shifts:
+        print
+        if shift.start < now < shift.end:
+            employees += [e.name for e in shift.employees]
+    return employees
 
 
-s = sp.ShiftPlanning(sp_creds['key'], sp_creds['username'],
-        sp_creds['password'])
-s.do_login()
-
-
-s.get_schedules()
-s.create_shift(
-        {
-            'start_time': '10:00 am',
-            'end_time': '11:00 pm',
-            'start_date': '10 November 2012',
-            'end_date': '10 November 2012',
-            'schedule': '82020'
-            }
-        )
-
-s.get_shifts()
-
-print s.get_public_data()
+print whoIsOnNow()
