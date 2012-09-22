@@ -32,16 +32,14 @@ sp_creds['username'], sp_creds['password'])
 
 connection.do_login()
 
-def whoIsOnNow():
-    now = dt.datetime.now()
+def onNow(daydiff=0):
+    now = dt.datetime.now() + dt.timedelta(days=daydiff)
     connection.get_shifts(now, now, mode='overview')
     shifts = map(AttributeRich, connection.get_public_data())
     employees = []
     for shift in shifts:
-        print
         if shift.start < now < shift.end:
             employees += [e.name for e in shift.employees]
     return employees
 
-
-print whoIsOnNow()
+print onNow()
