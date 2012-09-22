@@ -43,3 +43,6 @@ def onNow(daydiff=0):
     return employees
 
 print onNow()
+
+connection.do_logout()
+
