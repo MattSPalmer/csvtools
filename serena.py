@@ -8,8 +8,8 @@ import sh
 import time
 from collections import Counter
 
-fn  = desklib.functions
-cl  = desklib.classes
+fn = desklib.functions
+cl = desklib.classes
 pre = desklib.presets
 
 srn_logger = logging.getLogger('desk.serena')
@@ -34,13 +34,13 @@ def updatedCases():
     last = fn.getEvent('last_updated')
     search = cl.CaseSearch(**pre.searches['followup'])
     updated = Counter(
-            [c.user.name.split(' ')[0]
-                for c in search if c.user and c.interaction_in_at > last])
+        [c.user.name.split(' ')[0] for c in search
+         if c.user and c.interaction_in_at > last])
     fn.updateEvents('last_updated', dt.datetime.now())
     for k, v in updated.iteritems():
         n = 'case' if v == 1 else 'cases'
         fn.serenaSay(pre.phrases['updated'],
-                name=k, num=v, noun=n)
+                     name=k, num=v, noun=n)
 
 def main():
     sound('youre_welcome')

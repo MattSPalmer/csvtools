@@ -1,5 +1,3 @@
-#!usr/bin/env python
-
 ###############
 #  Functions  #
 ###############
@@ -47,7 +45,7 @@ def getFromDesk(category, **params):
     base_url = 'http://shopkeep.desk.com/api/v1/'
     output_format = 'json'
     request_url = '%s%s.%s?%s' % (base_url, category, output_format,
-            ul.urlencode(params))
+                                  ul.urlencode(params))
     res, content = api.client.request(request_url, "GET")
     content = json.loads(content)
     while content.get('error', False):
@@ -59,14 +57,14 @@ def getFromDesk(category, **params):
 
 def updateSieve(search):
     cache_file = shelve.open('cases')
-    cache = set([ (x[0], x[1]['updated_at']) for x in cache_file.items() ])
-    desk = set([ (str(x.values()[0]['id']), x.values()[0]['updated_at'])
-                for x in search.results ])
+    cache = set([(x[0], x[1]['updated_at']) for x in cache_file.items()])
+    desk = set([(str(x.values()[0]['id']), x.values()[0]['updated_at'])
+                for x in search.results])
 
-    new =     set([n[0] for n in desk]) - set(n[0] for n in cache)
-    novel =   desk - cache
+    new = set([n[0] for n in desk]) - set(n[0] for n in cache)
+    novel = desk - cache
     updated = set([n[0] for n in novel]) - new
-    old =     set(n[0] for n in cache) - updated
+    old = set(n[0] for n in cache) - updated
 
     return map(list, (new, updated, old))
 

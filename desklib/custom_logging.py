@@ -1,5 +1,3 @@
-#!usr/bin/env python
-
 import logging
 from logging.handlers import RotatingFileHandler
 from os import path
@@ -24,8 +22,8 @@ ch.setLevel(logging.ERROR)
 
 # create formatter and add it to the handlers
 formatter = logging.Formatter(
-        '%(levelname)-8s %(asctime)-15s %(name)-20s %(message)s'
-        )
+    '%(levelname)-8s %(asctime)-15s %(name)-20s %(message)s'
+    )
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
