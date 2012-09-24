@@ -36,7 +36,8 @@ def main():
             help='process a local report file (csv)')
 
     parser.add_argument('-d', '--date', nargs='+',
-            help='download a report file between two dates of format `yyyymmdd`')
+            help='download a report file between two dates '
+                    'of format `yyyymmdd`')
 
     # Determine output.
     parser.add_argument('-c', '--callers', action='store_true',

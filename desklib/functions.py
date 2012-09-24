@@ -9,12 +9,12 @@ import urllib as ul
 import api
 import time
 import json
-import logging
+import sh
 import shelve
 
-logging.basicConfig(level=logging.DEBUG)
-
 today = dt.datetime.today()
+
+# Date functions
 
 def dtStrToDtObj(date_str):
     return dt.datetime.strptime(date_str, '%Y%m%d')
@@ -42,6 +42,7 @@ def formatDeskDate(date):
     adj_date = '-'.join(split_date[:-1])
     return dt.datetime.strptime(adj_date, date_format)
 
+
 def getFromDesk(category, **params):
     base_url = 'http://shopkeep.desk.com/api/v1/'
     output_format = 'json'
@@ -68,3 +69,26 @@ def updateSieve(search):
     old =     set(n[0] for n in cache) - updated
 
     return map(list, (new, updated, old))
+
+def updateEvents(k, v):
+    events_file = shelve.open('events', writeback=True)
+    try:
+        events_file[k] = v
+    except:
+        print "Hey."
+    finally:
+        events_file.close()
+    return v
+
+def getEvent(k):
+    events_file = shelve.open('events', writeback=True)
+    try:
+        v = events_file.get(k, None)
+    except:
+        print "Hey."
+    finally:
+        events_file.close()
+    return v
+
+def serenaSay(msg, **params):
+    sh.say(msg.format(**params))

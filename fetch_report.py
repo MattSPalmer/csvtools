@@ -14,7 +14,8 @@ def downloadcsv(start_date, end_date, apiKey):
             'transfer_to_number': '1'
             }
 
-    reportUrl = 'https://secure.ifbyphone.com/ibp_api.php?' + ul.urlencode(params)
+    reportUrl = ('https://secure.ifbyphone.com/ibp_api.php?'
+            + ul.urlencode(params))
 
     return ul.urlretrieve(reportUrl)
 
