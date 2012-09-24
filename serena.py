@@ -1,8 +1,9 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 
 import desklib
 import datetime as dt
 import logging
+import os
 import sh
 import time
 from collections import Counter
@@ -12,6 +13,11 @@ cl  = desklib.classes
 pre = desklib.presets
 
 srn_logger = logging.getLogger('desk.serena')
+
+def sound(name):
+    # Gah this is so hacky.
+    dir = os.path.join(os.path.dirname(desklib.__file__), '..')
+    sh.afplay(os.path.join(dir,'media/{}.mp3'.format(name)))
 
 def newCases():
     srn_logger.debug('\nGetting new cases.\n')
@@ -37,7 +43,7 @@ def updatedCases():
                 name=k, num=v, noun=n)
 
 def main():
-    sh.afplay('media/captain_planet.mp3')
+    sound('youre_welcome')
     while True:
         newCases()
         updatedCases()
