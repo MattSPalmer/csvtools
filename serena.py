@@ -23,7 +23,8 @@ def newCases():
     srn_logger.debug('\nGetting new cases.\n')
     last = fn.getEvent('last_updated_new')
     search = cl.CaseSearch(**pre.searches['new'])
-    new = len([c for c in search if c.interaction_in_at > last])
+    new = len([c if c.interaction_in_at else True
+               for c in search if c.interaction_in_at > last])
     fn.updateEvents('last_updated_new', dt.datetime.now())
     if new > 0:
         n = 'case' if new == 1 else 'cases'
