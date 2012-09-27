@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 #!/usr/bin/python
-=======
-#!/usr/bin/env python
->>>>>>> desk
 
 import desklib
 import datetime as dt
@@ -58,11 +54,7 @@ def updatedCases():
                      name=name, ids=say_ids)
 
 def main():
-<<<<<<< HEAD
-    sh.afplay('/Users/provisions/bin/csvtools/media/captain_planet.mp3')
-=======
     playSound()
->>>>>>> desk
     while True:
         newCases()
         updatedCases()
