@@ -7,7 +7,6 @@ import os
 import random
 import sh
 import time
-from collections import Counter
 
 fn = desklib.functions
 cl = desklib.classes
@@ -38,14 +37,21 @@ def updatedCases():
     srn_logger.debug('\nGetting updated cases.\n')
     last = fn.getEvent('last_updated')
     search = cl.CaseSearch(**pre.searches['followup'])
-    updated = Counter(
-        [c.user.name.split(' ')[0] for c in search
-         if c.user and c.interaction_in_at > last])
+    updated = {}
+    for c in search:
+        if c.user and c.interaction_in_at > last:
+            x = c.user.name.split(' ')[0]
+            y = ' '.join(list(str(c.id)))
+            updated.setdefault(x, []).append(y)
     fn.updateEvents('last_updated', dt.datetime.now())
-    for k, v in updated.iteritems():
-        n = 'case' if v == 1 else 'cases'
+    for name, ids in updated.iteritems():
+        if len(ids) > 1:
+            say_ids = ', '.join(ids[:-1]) + ', and %s' % ids[-1]
+        elif len(ids) == 1:
+            say_ids = ids[0]
+
         fn.serenaSay(pre.phrases['updated'],
-                     name=k, num=v, noun=n)
+                     name=name, ids=say_ids)
 
 def main():
     playSound()
