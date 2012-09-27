@@ -1,23 +1,37 @@
+<<<<<<< HEAD
 #!/usr/bin/python
+=======
+#!/usr/bin/env python
+>>>>>>> desk
 
 import desklib
 import datetime as dt
 import logging
+import os
+import random
 import sh
 import time
-from collections import Counter
 
-fn  = desklib.functions
-cl  = desklib.classes
+fn = desklib.functions
+cl = desklib.classes
 pre = desklib.presets
 
 srn_logger = logging.getLogger('desk.serena')
+
+def playSound():
+    # Gah this is so hacky.
+    sound_dir = os.path.join(os.path.dirname(desklib.__file__), '../media')
+    sound_files = [f for f in os.listdir(sound_dir) if 'mp3' in f]
+    filename = random.choice(sound_files)
+    the_file = os.path.join(sound_dir, filename)
+    sh.afplay(the_file)
 
 def newCases():
     srn_logger.debug('\nGetting new cases.\n')
     last = fn.getEvent('last_updated_new')
     search = cl.CaseSearch(**pre.searches['new'])
-    new = len([c for c in search if c.interaction_in_at > last])
+    new = len([c if c.interaction_in_at else True
+               for c in search if c.interaction_in_at > last])
     fn.updateEvents('last_updated_new', dt.datetime.now())
     if new > 0:
         n = 'case' if new == 1 else 'cases'
@@ -27,17 +41,28 @@ def updatedCases():
     srn_logger.debug('\nGetting updated cases.\n')
     last = fn.getEvent('last_updated')
     search = cl.CaseSearch(**pre.searches['followup'])
-    updated = Counter(
-            [c.user.name.split(' ')[0]
-                for c in search if c.user and c.interaction_in_at > last])
+    updated = {}
+    for c in search:
+        if c.user and c.interaction_in_at > last:
+            x = c.user.name.split(' ')[0]
+            y = ' '.join(list(str(c.id)))
+            updated.setdefault(x, []).append(y)
     fn.updateEvents('last_updated', dt.datetime.now())
-    for k, v in updated.iteritems():
-        n = 'case' if v == 1 else 'cases'
+    for name, ids in updated.iteritems():
+        if len(ids) > 1:
+            say_ids = ', '.join(ids[:-1]) + ', and %s' % ids[-1]
+        elif len(ids) == 1:
+            say_ids = ids[0]
+
         fn.serenaSay(pre.phrases['updated'],
-                name=k, num=v, noun=n)
+                     name=name, ids=say_ids)
 
 def main():
+<<<<<<< HEAD
     sh.afplay('/Users/provisions/bin/csvtools/media/captain_planet.mp3')
+=======
+    playSound()
+>>>>>>> desk
     while True:
         newCases()
         updatedCases()

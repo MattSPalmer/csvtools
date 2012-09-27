@@ -32,28 +32,34 @@ def main():
     ###############
 
     # Determine input.
-    parser.add_argument('-f', '--localfile',
-            help='process a local report file (csv)')
+    parser.add_argument(
+        '-f', '--localfile',
+        help='process a local report file (csv)')
 
-    parser.add_argument('-d', '--date', nargs='+',
-            help='download a report file between two dates '
-                    'of format `yyyymmdd`')
+    parser.add_argument(
+        '-d', '--date', nargs='+',
+        help='download a report file between two dates of format `yyyymmdd`')
 
     # Determine output.
-    parser.add_argument('-c', '--callers', action='store_true',
-            help='display each incoming caller with number of times called')
+    parser.add_argument(
+        '-c', '--callers', action='store_true',
+        help='display each incoming caller with number of times called')
 
-    parser.add_argument('-m', '--missed', action='store_true',
-            help='display missed calls by date')
+    parser.add_argument(
+        '-m', '--missed', action='store_true',
+        help='display missed calls by date')
 
-    parser.add_argument('-w', '--write', action='store_true',
-            help='write input to new file')
+    parser.add_argument(
+        '-w', '--write', action='store_true',
+        help='write input to new file')
 
-    parser.add_argument('-a', '--agents', action='store_true',
-            help='display missed calls by agent name and hour')
+    parser.add_argument(
+        '-a', '--agents', action='store_true',
+        help='display missed calls by agent name and hour')
 
-    parser.add_argument('-g', '--graphbyhour', action='store_true',
-            help='graph calls by hour and day')
+    parser.add_argument(
+        '-g', '--graphbyhour', action='store_true',
+        help='graph calls by hour and day')
 
     args = parser.parse_args()
 
@@ -95,8 +101,8 @@ def main():
         cp.writeToJson(cp.timeparse(theReport))
 
     else:
-        raise ArgumentError('No report type specified. '
-                'Run callparser -h for usage')
+        raise ArgumentError(
+            'No report type specified. Run callparser -h for usage')
 
 
 if __name__ == '__main__':

@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import functions as fn
 import datetime as dt
 import shelve
@@ -111,14 +109,14 @@ class CaseSearch(DeskObject):
             if force_update:
                 self.logger.debug('Update forced on %s' % case_id)
                 self.cases[case_id] = self.updated[case_id] = Case(
-                        case_id=case_id, force_update=True)
+                    case_id=case_id, force_update=True)
             elif str(case_id) in old:
                 self.logger.debug('No update needed for %s' % case_id)
                 self.cases[case_id] = self.old[case_id] = Case(case_id=case_id)
             elif str(case_id) in updated:
                 self.logger.debug('Update needed for %s' % case_id)
                 self.cases[case_id] = self.updated[case_id] = Case(
-                        case_id=case_id, force_update=True)
+                    case_id=case_id, force_update=True)
             elif str(case_id) in new:
                 self.logger.debug('Data needed for new case %s' % case_id)
                 self.cases[case_id] = self.new[case_id] = Case(
@@ -165,9 +163,9 @@ class Case(DeskObject):
         self.logger = logging.getLogger('desk.classes.Case')
         self.logger.debug('creating an instance of Case')
 
-        if (not (case_id or data)):
+        if not (case_id or data):
             self.logger.error('When instantiating a Case you must specify '
-                    'either the case data or case ID.')
+                'either the case data or case ID.')
             sys.exit()
         pref_attrs = {'case_status_type': 'status'}
         case_file = shelve.open('cases', writeback=True)
@@ -258,8 +256,8 @@ class Case(DeskObject):
             try:
                 data = int_file[case_id]
             except KeyError:
-                self.logger.debug('Downloading interactions for case #%s...'
-                        % case_id)
+                self.logger.debug(
+                    'Downloading interactions for case #%s...' % case_id)
                 res, content = fn.getFromDesk('interactions', case_id=self.id)
                 int_file[case_id] = data = content
             finally:
@@ -283,8 +281,8 @@ class Interaction(DeskObject):
         self.logger.debug('creating an instance of Case')
 
         pref_attrs = {
-                'interactionable': 'incoming'
-                }
+            'interactionable': 'incoming'
+            }
         super(Interaction, self).__init__(data, pref_attrs=pref_attrs)
 
     def __repr__(self):

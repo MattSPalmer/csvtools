@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import desklib
 
 fn = desklib.functions
