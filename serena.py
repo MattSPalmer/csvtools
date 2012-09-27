@@ -43,9 +43,10 @@ def updatedCases():
          if c.user and c.interaction_in_at > last])
     fn.updateEvents('last_updated', dt.datetime.now())
     for k, v in updated.iteritems():
+        name = pre.name_subs.get(k, k)
         n = 'case' if v == 1 else 'cases'
         fn.serenaSay(pre.phrases['updated'],
-                     name=k, num=v, noun=n)
+                     name=name, num=v, noun=n)
 
 def main():
     playSound()
