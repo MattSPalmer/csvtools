@@ -49,7 +49,28 @@ def updatedCases():
                      name=name, num=v, noun=n)
 
 def main():
-    playSound()
+    import argparse
+    import textwrap
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.dedent('''\
+            Serena monitors Desk.com for activity and reports vocally when
+            relevant.
+            '''))
+
+    parser.add_argument(
+        '-r', '--reset', action='store_true',
+        help="artificially shift the 'last_updated' timestamp back a day")
+
+    args = parser.parse_args()
+
+    if args.reset:
+        fn.updateEvents(
+            'last_updated',
+            dt.datetime.now() - dt.timedelta(days=1))
+
+    playSound()    
     while True:
         newCases()
         updatedCases()
