@@ -63,6 +63,10 @@ def main():
         '-r', '--reset', action='store_true',
         help="artificially shift the 'last_updated' timestamp back a day")
 
+    parser.add_argument(
+        '--delay', default=30,
+        help="artificially shift the 'last_updated' timestamp back a day")
+
     args = parser.parse_args()
 
     if args.reset:
@@ -74,7 +78,7 @@ def main():
     while True:
         newCases()
         updatedCases()
-        time.sleep(30)
+        time.sleep(args.delay)
 
 if __name__ == '__main__':
     main()
