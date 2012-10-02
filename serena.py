@@ -55,7 +55,7 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=textwrap.dedent('''\
-            Serena monitors Desk.com for activity and reports vocally when
+            Serena monitors Desk.com for activity and reports audibly when
             relevant.
             '''))
 
